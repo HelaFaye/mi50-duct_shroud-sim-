@@ -3,14 +3,14 @@
 ## Audited baseline
 
 - Repository: `HelaFaye/mi50-duct_shroud-sim-`
-- Branch: `main`
-- Baseline commit: `227ced78fa3fe52926d0108a0a40638814dd8c70`
+- Stable branch: `main`
+- Initial audited commit: `227ced78fa3fe52926d0108a0a40638814dd8c70`
+- Current tested baseline commit: `eca4f4493e4df18843932a3e755299645ef1822f`
 - Audited local checkout: `~/Downloads/mi50-duct_shroud-sim`
-- Tracked source snapshot: 28 files
-- Local working tree: clean; only generated Python bytecode caches were ignored
-- Overlay checksum manifest: all five entries verified successfully
+- Source snapshot at initial audit: 28 tracked files; the CI workflow and this status document were subsequently added.
+- The project `.gitignore` contains `*.pyc`; no global `core.excludesfile` was configured during the audit.
 
-The file inventory was enumerated from the working tree and compared with the published Git tree. The project `.gitignore` contains `*.pyc`; no global `core.excludesfile` was configured. Thus the absent CAD/CFD files are not being hidden by the observed ignore configuration.
+The file inventory was enumerated from the working tree and compared with the published Git tree. The absent CAD/CFD files are not being hidden by the observed ignore configuration.
 
 ## Present capabilities
 
@@ -23,10 +23,11 @@ The file inventory was enumerated from the working tree and compared with the pu
 | Mechanical identity / provenance | `data/mi50_envelope.json`, `mi50_envelope.json`, `MI50_PUBLIC_REFERENCE_MODELS.md`, `PUBLIC_SOURCES.md`, `docs/` | Documentation/data present; verify against each physical specimen |
 | Browser content | `site/index.html`, `site/docs/` | Static site files present; inspect dependencies before claiming an integrated CAD editor |
 | CFD | `simulation/README.md` | Planning/documentation only; no validated CFD case or fluid mesh present |
+| Automated Python CI | `.github/workflows/tests.yml` | Implemented; Python 3.10, 3.12, and 3.14 jobs passed in run 44953907969 |
 
 ## Absent from the audited checkout
 
-The following paths are referenced by the older README but do not exist in the audited tree:
+The following paths are referenced by the older project description but do not exist in the audited tree:
 
 - `cad/openscad/` and its OpenSCAD model sources
 - `models/reference/` and reference STL meshes
@@ -50,9 +51,9 @@ git log -1 --oneline --decorate
 find . -path './.git' -prune -o -type f -print | sort
 
 # Run the standard-library test suite
+python3 -m compileall -q analysis scripts tests
 python3 -m unittest discover -s tests -v
 
-# Check patch whitespace after applying a future overlay
 git diff --check
 ```
 
@@ -63,11 +64,13 @@ git diff --check
 - The system-curve CSV is a template, not a measurement dataset.
 - The ideal bulk-air temperature rise is not a GPU junction/HBM/VRM temperature prediction.
 - The current fan model assumes identical parallel fans with equal flow sharing and one fixed-speed steady-state fan curve.
-- No uncertainty interval is defensible until the curve and instrument uncertainty inputs are explicitly supplied.
+- No uncertainty interval is defensible until the curve and instrument uncertainty inputs, distributions, and correlations are explicitly supplied.
 
-## Next work
+## Development tracking
 
-1. Add automated CI for the existing 21-test suite.
-2. Implement uncertainty-aware fan/system curve inputs and operating-point propagation without assigning invented uncertainty values.
-3. Implement sensitivity studies for RPM and system resistance, keeping manufacturer affinity-law scaling assumptions explicit.
-4. Restore or develop the missing CAD/CFD assets from verified source material.
+The current plan and work log are maintained in:
+
+- [`DEVELOPMENT_PLAN.md`](DEVELOPMENT_PLAN.md) — milestones and acceptance gates.
+- [`PROGRESS.md`](PROGRESS.md) — tested baseline, completed work, active work, and dated log.
+
+The next engineering milestone is M1: specify uncertainty semantics and the fan/system curve input-data contract. Do not begin Monte Carlo implementation until the uncertainty types, distribution assumptions, correlations, and physically valid curve-sampling method are documented and reviewed.

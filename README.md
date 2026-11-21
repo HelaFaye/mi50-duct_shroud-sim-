@@ -6,7 +6,7 @@ Engineering research for a configurable cooling system for the AMD Radeon Instin
 
 **This repository revision is a solver and photogrammetry snapshot, not the complete CAD/CFD project.** The README in the initial snapshot described several components that are not present in the checked-in tree. This version distinguishes implemented files from planned work so that users do not mistake roadmap items for available tools.
 
-The current repository contains 28 tracked files. Its main implemented capabilities are:
+The main implemented capabilities are:
 
 - Fan/system operating-point calculation in `analysis/fan_operating_point.py`.
 - Manual ARCTIC P9 Max 4300 RPM fan-curve digitization in `data/fan_curves/`.
@@ -14,11 +14,20 @@ The current repository contains 28 tracked files. Its main implemented capabilit
 - Weighted photogrammetry scale fitting in `scripts/photogrammetry_scale_fit.py`.
 - MI50 envelope, public-source, physical-measurement, and photogrammetry documentation under `docs/` and at the repository root.
 - A static browser interface under `site/`.
-- Automated unit tests under `tests/`.
+- Automated unit tests under `tests/` and GitHub Actions under `.github/workflows/`.
 
 The following deliverables are **not present in this checkout**: OpenSCAD source models, reference STL meshes, the earlier duct-sizing and acoustic-budget scripts, fan-catalog CSV, and a CFD-ready geometry/boundary-condition package. They must be restored from their authoritative source or developed in separate changes before the repository can be described as containing them.
 
 See [`docs/REPOSITORY_STATUS.md`](docs/REPOSITORY_STATUS.md) for the audited inventory and continuation boundaries.
+
+## Development plan and progress
+
+The engineering roadmap, milestone acceptance criteria, branching policy, and current completion state are maintained in:
+
+- [`docs/DEVELOPMENT_PLAN.md`](docs/DEVELOPMENT_PLAN.md) — milestone plan and engineering gates.
+- [`docs/PROGRESS.md`](docs/PROGRESS.md) — current baseline, completed work, active milestone, and dated progress log.
+
+Keep `main` as the validated integration baseline. Perform ongoing engineering work on focused `wip/<topic>` branches and merge through pull requests after local validation and CI pass. Update the progress log when a milestone changes state or an engineering decision changes.
 
 ## Run the tests
 
@@ -28,7 +37,7 @@ The project currently uses Python's standard library for its analysis and tests;
 python3 -m unittest discover -s tests -v
 ```
 
-The expected current suite contains 21 tests: 17 fan/system operating-point tests and 4 photogrammetry scale-fit tests.
+The current suite contains 21 tests: 17 fan/system operating-point tests and 4 photogrammetry scale-fit tests. GitHub Actions runs the suite on Python 3.10, 3.12, and 3.14 for pushes and pull requests.
 
 ## Fan/system operating-point solver
 
@@ -92,13 +101,5 @@ It is the average air-stream temperature rise for the assumed heat load and volu
 For a defensible installed operating point, characterize the complete intended air path: fan model/count/speed/orientation, inlet, shroud, seals, heatsink, outlet, and pressure measurement planes. Record total volumetric flow, differential static pressure, fan RPM, electrical operating condition, ambient conditions, instrument calibration/uncertainty, and repeatability. Keep the system pressure definition consistent with the fan-curve convention; document velocity-pressure corrections where applicable.
 
 The external-flow-bench approach described in [`docs/FAN_OPERATING_POINT_MODEL.md`](docs/FAN_OPERATING_POINT_MODEL.md) can characterize the passive duct/heatsink resistance without operating a GPU at an unvalidated thermal load.
-
-## Planned engineering sequence
-
-1. Preserve and verify the current solver and photogrammetry baseline with automated CI.
-2. Add uncertainty-aware operating-point and sensitivity analysis using explicitly recorded fan-curve and system-measurement uncertainty.
-3. Restore or develop revision-specific MI50 CAD geometry from verified measurements; keep 16GB and 32GB specimens separate until their geometry is established.
-4. Build a validated fluid volume and define CFD boundary conditions from manufacturer or measured fan curves and the measured system resistance.
-5. Correlate airflow and thermal predictions against sustained-load temperature, power, and fan-RPM measurements.
 
 A CAD/CFD roadmap item is not considered implemented until its source files, provenance, validation procedure, and tests are committed to this repository.

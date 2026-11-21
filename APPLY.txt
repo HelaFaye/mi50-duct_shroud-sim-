@@ -1,35 +1,31 @@
-MI50 measured-system-curve overlay
+MI50 repository-integrity and CI overlay
 
-Apply from the root of the existing mi50-duct_shroud-sim checkout (the directory
-where the first fan-operating-point overlay was applied):
+Apply from the root of the existing mi50-duct_shroud-sim checkout:
 
-  unzip -o mi50-measured-system-curve-overlay.zip -d .
+  unzip -o ~/Downloads/mi50-repository-integrity-overlay.zip -d .
 
-Then validate:
+Verify the overlay payload and review the patch/new files before committing:
 
+  sha256sum -c OVERLAY_SHA256SUMS
+
+  git status --short
+  git diff --check
+  git diff -- README.md
+  sed -n '1,240p' docs/REPOSITORY_STATUS.md
+  sed -n '1,160p' .github/workflows/tests.yml
+
+Run the same suite locally:
+
+  python3 -m compileall -q analysis scripts tests
   python3 -m unittest discover -s tests -v
-  python3 analysis/fan_operating_point.py --help
 
-The existing quadratic CLI remains supported:
+Expected local suite: 21 tests. GitHub Actions will run the same suite on
+Python 3.10, 3.12, and 3.14 for pushes, pull requests, and manual dispatch.
 
-  python3 analysis/fan_operating_point.py \
-    --curve data/fan_curves/arctic_p9_max_4300rpm_digitized.csv \
-    --fan-count 2 --system-pressure-mmh2o 2.0 \
-    --system-reference-flow-cfm 50 --heat-load-w 300
+The manifest is named OVERLAY_SHA256SUMS so the repository's existing
+SHA256SUMS file (which covers the earlier solver overlay) is preserved.
 
-Once actual pressure-drop data exist, use:
-
-  python3 analysis/fan_operating_point.py \
-    --curve data/fan_curves/arctic_p9_max_4300rpm_digitized.csv \
-    --system-curve data/system_curves/mi50_system_curve.csv \
-    --fan-count 2 --heat-load-w 300
-
-`data/system_curves/mi50_system_curve_template.csv` is header-only. Copy it to
-`mi50_system_curve.csv` and populate it with measured total-flow / pressure-drop
-pairs before invoking the measured-curve mode. No synthetic or guessed MI50
-pressure data are included. The solver will reject a curve whose measured flow
-range does not reach the fan/system intersection; do not extrapolate.
-
-This overlay replaces `analysis/fan_operating_point.py`, its unit-test file,
-and `docs/FAN_OPERATING_POINT_MODEL.md`. It adds the system-curve template and
-this application note. It does not modify CAD, browser-editor, or CFD files.
+This overlay does not restore CAD/STL/CFD files, change the solver, invent
+measurement uncertainty values, or modify the measured system-curve template.
+It corrects the README's inventory, records the audited repository boundary,
+and adds automated CI for the checked-in Python suite.
