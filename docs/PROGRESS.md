@@ -8,10 +8,10 @@ _Last updated: 2026-11-21_
 - Stable branch: `main`
 - Current stable baseline: `eca4f4493e4df18843932a3e755299645ef1822f`
 - Active engineering branch: `wip/uncertainty-aware-operating-point`
-- Current WIP HEAD: `1a870566f3f412c79972589d93e16ca696a97ea8`
+- Current WIP HEAD: `a4571eaa60ee07475aab6da0732280ea05e25139`
 - Remote tracking: confirmed at `origin/wip/uncertainty-aware-operating-point`
 - Active milestone: **M1 — Specify uncertainty semantics and input-data contract**
-- M1 state: design draft prepared for owner review; no stochastic implementation authorized
+- M1 state: design draft committed and CI-verified; awaiting owner review; no stochastic implementation authorized
 
 ## Verified results
 
@@ -28,9 +28,14 @@ _Last updated: 2026-11-21_
 
 - Created `wip/uncertainty-aware-operating-point` from the tested `main` baseline.
 - Committed plan/progress tracking at `1a870566f3f412c79972589d93e16ca696a97ea8`.
-- Confirmed the remote branch points to the same commit with `git ls-remote --heads origin wip/uncertainty-aware-operating-point`.
+- Confirmed the remote branch points to that commit before the M1 specification update.
 - WIP CI run [44954367135](https://github.com/HelaFaye/mi50-duct_shroud-sim-/actions/runs/44954367135): Python 3.10, 3.12, and 3.14 jobs all passed compilation and the full unittest suite.
-- Local branch status after push: clean and tracking `origin/wip/uncertainty-aware-operating-point`.
+
+### M1 uncertainty specification draft published
+
+- Committed `docs/UNCERTAINTY_MODEL_SPEC.md` and its README/plan/progress links at [`a4571eaa60ee07475aab6da0732280ea05e25139`](https://github.com/HelaFaye/mi50-duct_shroud-sim-/commit/a4571eaa60ee07475aab6da0732280ea05e25139).
+- GitHub Actions run [44956308326](https://github.com/HelaFaye/mi50-duct_shroud-sim-/actions/runs/44956308326) completed successfully on Python 3.10, 3.12, and 3.14. Each job passed Python compilation and the full unittest step.
+- The specification remains a draft for owner review. M2 Monte Carlo implementation remains blocked pending M1 acceptance.
 
 ## Current engineering truth
 
@@ -65,9 +70,10 @@ No uncertainty values are to be invented to populate existing data files. Synthe
 | 2026-11-21 | Audited repository scope and corrected README inventory | Confirmed absent CAD/STL/duct-sizing/acoustic/CFD assets; no hidden source files found |
 | 2026-11-21 | Added Python CI matrix and repository status audit | Main commit `eca4f4493e4df18843932a3e755299645ef1822f` |
 | 2026-11-21 | Verified main CI | Run `44953907969`; Python 3.10, 3.12, and 3.14 all successful |
-| 2026-11-21 | Added development plan and progress tracking on WIP branch | Commit `1a870566f3f412c79972589d93e16ca696a97ea8`; remote branch confirmed |
-| 2026-11-21 | Verified WIP CI | Run `44954367135`; Python 3.10, 3.12, and 3.14 all successful |
-| 2026-11-21 | Drafted M1 uncertainty specification | `docs/UNCERTAINTY_MODEL_SPEC.md`; awaiting owner review; M2 remains blocked |
+| 2026-11-21 | Added development plan and progress tracking on WIP branch | Commit `1a870566f3f412c79972589d93e16ca696a97ea8` |
+| 2026-11-21 | Verified WIP baseline CI | Run `44954367135`; Python 3.10, 3.12, and 3.14 all successful |
+| 2026-11-21 | Published M1 uncertainty specification draft | Commit `a4571eaa60ee07475aab6da0732280ea05e25139`; awaiting owner review; M2 remains blocked |
+| 2026-11-21 | Verified M1 specification commit CI | Run `44956308326`; Python 3.10, 3.12, and 3.14 all successful |
 
 ## Update protocol
 
