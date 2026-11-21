@@ -1,124 +1,104 @@
 # MI50 Active Cooling Project
 
-Parametric fan shroud, duct, and airflow/thermal analysis for the **AMD Radeon Instinct MI50** (and related MI-series cards where geometry allows).
+Engineering research for a configurable cooling system for the AMD Radeon Instinct MI50, including fan/system operating-point analysis, physical inspection, photogrammetry, and a longer-term path toward parametric CAD and CFD validation.
 
-The project is being built around three related deliverables:
+## Repository scope at this revision
 
-1. **Configurable CAD** — OpenSCAD geometry for fan mounts, angled inlet axes, merging chambers, outlet adapters, and a replaceable GPU-side interface.
-2. **Fan/duct sizing** — documented fan performance data, first-order heat/flow calculations, and duct-area calculations.
-3. **CFD / thermal validation** — flow simulation using fan performance curves and the actual heatsink flow resistance, followed by thermal validation against measured GPU temperatures.
+**This repository revision is a solver and photogrammetry snapshot, not the complete CAD/CFD project.** The README in the initial snapshot described several components that are not present in the checked-in tree. This version distinguishes implemented files from planned work so that users do not mistake roadmap items for available tools.
 
-## Current contents
+The current repository contains 28 tracked files. Its main implemented capabilities are:
 
-- `cad/openscad/mi50_120mm_reference.scad` — the first editable reconstruction of the uploaded MI50 shroud STL. It is a **single-120-mm reference baseline**, not yet the multi-fan/tilted-fan generator.
-- `models/reference/MI50_120mm_source.stl` — uploaded MI50 reference mesh. Its coordinates are in metres; the source mesh envelope is approximately 120.00 × 132.29 × 78.43 mm after conversion to millimetres.
-- `models/reference/MI25_2x40_reference.stl` — related dual-40-mm reference shroud; envelope approximately 100.50 × 57.84 × 40.01 mm.
-- `analysis/duct_sizing.py` — reproducible first-order CFM and duct-throat sizing calculator.
-- `data/fan_catalog.csv` — fan dimensions, published endpoint ratings, acoustic units/test notes, P–Q curve links, CFD spreadsheet links and provenance labels. Ratings are free-air flow and shutoff pressure, **not** the simultaneous operating point.
-- `docs/PUBLIC_SOURCES.md` — public-source research register covering MI50 teardown evidence, existing shroud precedents, fan manufacturer curves, temperature telemetry, licenses and unresolved data gaps.
-- `docs/USER_DIMENSION_CLAIM_AUDIT.md` — evidence audit of supplied dimensions and the 16GB/32GB variant caveats.
-- `docs/PHYSICAL_MEASUREMENT_GUIDE.md` and `data/mi50_measurement_template.csv` — specimen identification, non-destructive inspection, photo, and caliper measurement workflow.
-- `docs/PHOTOGRAMMETRY_WORKFLOW.md` — calibrated photo-capture, scale-control, reconstruction-tool selection, and confidence protocol for 16GB/32GB specimen-specific mechanical models.
-- `data/photogrammetry_capture_log_template.csv` and `data/photogrammetry_scale_constraints_template.csv` — capture provenance and independent dimensional scale references.
-- `scripts/photogrammetry_scale_fit.py` — weighted uniform scale fit from multiple known 3D distances, with per-reference residuals.
-- `data/mi50_envelope.json` — versioned, provenance-tagged common envelope and separate 16GB/32GB identity records.
-- `docs/AIRFLOW_DESIGN.md` — thermal flow budget, duct sizing, fan-configuration assessment, and design rules.
-- `docs/GEOMETRY_AND_ROADMAP.md` — source-mesh findings and the planned parametric architecture.
-- `simulation/README.md` — CFD approach and boundary-condition requirements.
-- `site/` — responsive GitHub Pages editor with browser-side OpenSCAD preview/export, source editing, JSON presets, and opt-in cookie persistence. See `docs/WEB_EDITOR.md`.
-- `.github/workflows/pages.yml` — deploys the static `site/` directory with GitHub Pages.
+- Fan/system operating-point calculation in `analysis/fan_operating_point.py`.
+- Manual ARCTIC P9 Max 4300 RPM fan-curve digitization in `data/fan_curves/`.
+- A header-only measured MI50 system-curve template in `data/system_curves/`.
+- Weighted photogrammetry scale fitting in `scripts/photogrammetry_scale_fit.py`.
+- MI50 envelope, public-source, physical-measurement, and photogrammetry documentation under `docs/` and at the repository root.
+- A static browser interface under `site/`.
+- Automated unit tests under `tests/`.
 
-## MI50 16GB / 32GB evidence status
+The following deliverables are **not present in this checkout**: OpenSCAD source models, reference STL meshes, the earlier duct-sizing and acoustic-budget scripts, fan-catalog CSV, and a CFD-ready geometry/boundary-condition package. They must be restored from their authoritative source or developed in separate changes before the repository can be described as containing them.
 
-AMD independently publishes the same headline external envelope for both MI50 SKUs: 267 mm board length, Full Height, Double Slot, passive cooling, and 300 W peak TDP. This supports a shared nominal packaging profile, not identical internal geometry. The available teardown is a genuine 16GB specimen; its two visible fin fields, cover fasteners, and vapor-chamber details are not yet verified on a 32GB card. Community research reports multiple 32GB PCB variants, but its compute-configuration claims conflict with AMD’s official 32GB specification; treat those reports as unverified identity leads. Identify the exact board/revision before applying the reference geometry. See `docs/MI50_ENVELOPE.md`.
+See [`docs/REPOSITORY_STATUS.md`](docs/REPOSITORY_STATUS.md) for the audited inventory and continuation boundaries.
 
-## First-pass engineering conclusion
+## Run the tests
 
-For a 300 W heat load, the ideal bulk-air requirement is approximately 35 CFM for a 15 °C air-temperature rise, or 53 CFM for a 10 °C rise. Real design flow must include margin for bypass, nonuniform flow, recirculation, and the heatsink pressure drop. The initial target is **45–60 CFM actually passing through the heatsink**, not merely a fan's advertised free-air rating.
-
-At 50–55 CFM and a nominal 10 m/s duct velocity, the area is approximately 2,360–2,596 mm². With a 96 mm wide rectangular throat, that corresponds to about 24.6–27.0 mm of internal height. The initial preferred target is **at least 2,600–2,800 mm²**, subject to the measured free-flow area of the card heatsink.
-
-The 2 × 40 mm reference layout is useful as a geometric precedent, but two ordinary 40 × 20 mm fans (using the Noctua NF-A4x20 as a concrete published example) total only about 11 CFM at zero static pressure. That is not a credible 300 W cooling solution. See `docs/AIRFLOW_DESIGN.md`.
-
-## Units and conventions
-
-- CAD dimensions: millimetres.
-- Airflow: CFM (with SI conversions in calculations).
-- Static pressure: mm H₂O or Pa.
-- Temperatures: °C.
-- Thermal design input: 300 W card-level heat load, pending confirmation of actual power telemetry and heat distribution.
-
-## Important validation boundary
-
-This project does not yet claim a safe thermal design. A fan's maximum CFM occurs at approximately zero static pressure; its maximum static pressure occurs at zero flow. Neither rating tells us the installed flow through this card. Before treating a design as complete, we need the fan's complete P–Q curve, the duct and heatsink pressure-loss curve, adequate sealing, and temperature testing under sustained workload.
-
-## Suggested workflow
-
-1. Identify each physical MI50 specimen and capture separate assembled/deshrouded photogrammetry datasets.
-2. Calibrate the camera, scale each reconstruction from multiple independent dimensions, and physically validate fit-critical features.
-3. Rebuild the measured PCB/heatsink/cover as separate parametric solids; keep 16GB and 32GB profiles independent until verified.
-4. Finish the multi-fan/variable-angle CAD generator and preserve this single-120-mm model as a reference.
-5. Validate CAD geometry and export a watertight fluid volume for CFD.
-6. Compare fan curves with the simulated/system pressure curve to find the operating point.
-7. Run thermal CFD only after the heatsink geometry or a defensible porous-media model is available.
-8. Print a low-cost prototype, check fit and leakage, then test GPU temperatures, clocks, fan speed, and inlet/outlet air temperature.
-
-## Reproducible sizing calculation
+The project currently uses Python's standard library for its analysis and tests; no third-party Python packages are required for the checked-in test suite.
 
 ```bash
-python3 analysis/duct_sizing.py
-```
-
-The calculator intentionally reports free-air capacity and first-order throat area separately. It does not predict installed airflow or GPU junction temperature.
-
-## Acoustic design targets
-
-The browser editor includes an initial dBA budget calculator. Set the fan count, one fan's sound-pressure level and measurement distance, the listening distance, ambient noise, any separately measured system-noise contribution, and the maximum target level. The calculator estimates the combined SPL and derives the maximum allowed one-fan SPL at its reference distance. Its free-field and uncorrelated-source assumptions are documented in `simulation/README.md`; this is not yet a validated acoustic propagation or CFD-noise model.
-
-A reproducible command-line implementation is available:
-
-```bash
-python3 analysis/noise_budget.py --fan-count 2 --fan-spl 38 \\
-  --reference-distance 1.0 --listener-distance 0.5 \\
-  --target 35 --ambient 25
 python3 -m unittest discover -s tests -v
 ```
 
-## Fan/system operating-point solver (new)
+The expected current suite contains 21 tests: 17 fan/system operating-point tests and 4 photogrammetry scale-fit tests.
 
-`analysis/fan_operating_point.py` now solves a fan/system intersection using a
-single-fan P–Q curve, a quadratic system-resistance model, and an optional
-identical-fan parallel array. This replaces the invalid shortcut of summing
-free-air CFM ratings when estimating installed flow. The solver uses
-piecewise-linear curve interpolation and does not extrapolate beyond supplied
-curve data.
+## Fan/system operating-point solver
 
-A sample ARCTIC P9 Max 4300 RPM curve is provided at
-`data/fan_curves/arctic_p9_max_4300rpm_digitized.csv`. Its intermediate points
-are approximate manual readings from the manufacturer's chart; use the
-manufacturer's numeric CFD spreadsheet or measured data for final analysis.
+`analysis/fan_operating_point.py` finds the intersection of a single-fan pressure/flow curve and a system pressure-drop curve. It supports identical fans in parallel, piecewise-linear interpolation, and bisection without extrapolating outside the supplied curve ranges.
 
-Example (the **2.0 mmH2O at 50 CFM** system reference is hypothetical, not a
-measured MI50 pressure-drop value):
+Two system models are supported:
+
+1. **Quadratic screening approximation:** `Δp = K Q²`, with `K` fitted from one user-supplied pressure/flow reference point.
+2. **Tabulated system curve:** measured or otherwise justified total-flow/pressure-drop pairs supplied as CSV. This is the preferred mode once physical measurements exist.
+
+The included P9 Max curve is an approximate manual digitization of the manufacturer's published P–Q chart. Its intermediate values are not manufacturer numerical data. It is suitable for exercising the solver and preliminary screening, not final design sign-off.
+
+### Quadratic example
+
+The following reference point is hypothetical. It is not a measured MI50 heatsink/system resistance value.
 
 ```bash
-python3 analysis/fan_operating_point.py \\
-  --curve data/fan_curves/arctic_p9_max_4300rpm_digitized.csv \\
-  --fan-count 2 \\
-  --system-pressure-mmh2o 2.0 \\
-  --system-reference-flow-cfm 50 \\
+python3 analysis/fan_operating_point.py \
+  --curve data/fan_curves/arctic_p9_max_4300rpm_digitized.csv \
+  --fan-count 2 \
+  --system-pressure-mmh2o 2.0 \
+  --system-reference-flow-cfm 50 \
   --heat-load-w 300
 ```
 
-This illustrative case returns approximately 60.5 CFM total for two identical
-parallel fans and an ideal bulk-air temperature rise of approximately 8.7 °C.
-Those numbers are conditional on the hypothetical system curve, not a claim
-about an installed MI50 assembly. The single-fan case under the same assumed
-system curve is approximately 45.4 CFM and 11.6 °C ideal bulk-air rise.
+### Tabulated system-curve example
 
-See `docs/FAN_OPERATING_POINT_MODEL.md` for equations, data provenance,
-assumptions, limitations and calibration requirements. Run the tests with:
+Copy the template before entering measurements:
 
 ```bash
-python3 -m unittest discover -s tests -v
+cp data/system_curves/mi50_system_curve_template.csv \
+  data/system_curves/mi50_system_curve.csv
 ```
+
+Then populate it with measured total airflow and differential pressure pairs and run:
+
+```bash
+python3 analysis/fan_operating_point.py \
+  --curve data/fan_curves/arctic_p9_max_4300rpm_digitized.csv \
+  --system-curve data/system_curves/mi50_system_curve.csv \
+  --fan-count 2 \
+  --heat-load-w 300
+```
+
+The CSV columns are `flow_cfm,static_pressure_mmh2o`. The template is intentionally header-only. Do not enter the hypothetical 2 mmH₂O at 50 CFM point and label it as measured data. The solver rejects insufficient system-curve range rather than extrapolating.
+
+The model assumes identical fans with equal flow sharing, a steady-state fan curve at one speed, and a consistent static-pressure convention between fan and system data. Series fans, unequal fan sharing, PWM control, transients, flow maldistribution, leakage, and recirculation are not modelled.
+
+## Thermal interpretation
+
+The reported ideal bulk-air temperature rise is an energy-balance estimate:
+
+\[
+\Delta T_{air} = \frac{P}{\rho c_p Q}
+\]
+
+It is the average air-stream temperature rise for the assumed heat load and volume flow. It is **not** a GPU junction, HBM, VRM, heatsink-base, or local outlet temperature prediction. A thermal-resistance or validated heat-transfer model and measured temperatures are needed before making component-temperature or safe-operating claims.
+
+## Measurement priorities
+
+For a defensible installed operating point, characterize the complete intended air path: fan model/count/speed/orientation, inlet, shroud, seals, heatsink, outlet, and pressure measurement planes. Record total volumetric flow, differential static pressure, fan RPM, electrical operating condition, ambient conditions, instrument calibration/uncertainty, and repeatability. Keep the system pressure definition consistent with the fan-curve convention; document velocity-pressure corrections where applicable.
+
+The external-flow-bench approach described in [`docs/FAN_OPERATING_POINT_MODEL.md`](docs/FAN_OPERATING_POINT_MODEL.md) can characterize the passive duct/heatsink resistance without operating a GPU at an unvalidated thermal load.
+
+## Planned engineering sequence
+
+1. Preserve and verify the current solver and photogrammetry baseline with automated CI.
+2. Add uncertainty-aware operating-point and sensitivity analysis using explicitly recorded fan-curve and system-measurement uncertainty.
+3. Restore or develop revision-specific MI50 CAD geometry from verified measurements; keep 16GB and 32GB specimens separate until their geometry is established.
+4. Build a validated fluid volume and define CFD boundary conditions from manufacturer or measured fan curves and the measured system resistance.
+5. Correlate airflow and thermal predictions against sustained-load temperature, power, and fan-RPM measurements.
+
+A CAD/CFD roadmap item is not considered implemented until its source files, provenance, validation procedure, and tests are committed to this repository.
