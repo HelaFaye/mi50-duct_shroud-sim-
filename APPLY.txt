@@ -1,0 +1,35 @@
+MI50 measured-system-curve overlay
+
+Apply from the root of the existing mi50-duct_shroud-sim checkout (the directory
+where the first fan-operating-point overlay was applied):
+
+  unzip -o mi50-measured-system-curve-overlay.zip -d .
+
+Then validate:
+
+  python3 -m unittest discover -s tests -v
+  python3 analysis/fan_operating_point.py --help
+
+The existing quadratic CLI remains supported:
+
+  python3 analysis/fan_operating_point.py \
+    --curve data/fan_curves/arctic_p9_max_4300rpm_digitized.csv \
+    --fan-count 2 --system-pressure-mmh2o 2.0 \
+    --system-reference-flow-cfm 50 --heat-load-w 300
+
+Once actual pressure-drop data exist, use:
+
+  python3 analysis/fan_operating_point.py \
+    --curve data/fan_curves/arctic_p9_max_4300rpm_digitized.csv \
+    --system-curve data/system_curves/mi50_system_curve.csv \
+    --fan-count 2 --heat-load-w 300
+
+`data/system_curves/mi50_system_curve_template.csv` is header-only. Copy it to
+`mi50_system_curve.csv` and populate it with measured total-flow / pressure-drop
+pairs before invoking the measured-curve mode. No synthetic or guessed MI50
+pressure data are included. The solver will reject a curve whose measured flow
+range does not reach the fan/system intersection; do not extrapolate.
+
+This overlay replaces `analysis/fan_operating_point.py`, its unit-test file,
+and `docs/FAN_OPERATING_POINT_MODEL.md`. It adds the system-curve template and
+this application note. It does not modify CAD, browser-editor, or CFD files.

@@ -1,0 +1,238 @@
+{
+  "schema_version": 2,
+  "model": "AMD Radeon Instinct MI50",
+  "units": "mm",
+  "scope": "Published common envelope for AMD-listed MI50 16GB and 32GB SKUs, with board-revision-specific internal geometry kept separate. Detailed teardown geometry currently represents a genuine 16GB specimen only.",
+  "dimensions": {
+    "board_length": {
+      "value": 267.0,
+      "status": "manufacturer_specified",
+      "source": "https://www.amd.com/en/support/downloads/drivers.html/accelerators/instinct/instinct-mi-series/instinct-mi50.html",
+      "note": "AMD separately lists 10.5 in (267 mm) for both the MI50 16GB and MI50 32GB product pages."
+    },
+    "board_height": {
+      "value": 111.15,
+      "status": "form_factor_nominal",
+      "source": "https://studylib.net/doc/28414113/pci-express-cem-r2.0-cb",
+      "note": "AMD lists Full Height for both SKUs. 111.15 mm is a PCIe form-factor nominal from an earlier CEM reference, not a card-specific measurement."
+    },
+    "slot_envelope_thickness": {
+      "value": 40.0,
+      "status": "form_factor_estimate",
+      "source": "https://www.amd.com/en/support/downloads/drivers.html/accelerators/instinct/instinct-mi-series/instinct-mi50.html",
+      "note": "AMD lists Double Slot for both SKUs, not an exact assembled thickness."
+    },
+    "original_cover_thickness": {
+      "value": 0.5,
+      "status": "unverified_estimate",
+      "source": "https://diegostrebel.com/posts/instinct_mi_50/",
+      "note": "0.5 mm is a user-supplied estimate. Public teardown confirms a removable outer shroud but provides no sheet-thickness measurement."
+    },
+    "deshrouded_cooler_thickness": {
+      "min": 35.0,
+      "max": 37.0,
+      "status": "unverified_estimate",
+      "source": "https://diegostrebel.com/posts/instinct_mi_50/",
+      "note": "35\u201337 mm is a user-supplied estimate. Public teardown images show separate black heatsink and silver vapor-chamber fin regions but provide no calibrated thickness measurement."
+    },
+    "vega_package_footprint": {
+      "value": 47.5,
+      "status": "unverified_user_supplied_candidate",
+      "source": null,
+      "note": "Candidate value supplied in the 2026-11-20 research discussion. Do not treat as confirmed for Vega 20/MI50: the commonly cited 47.3 mm Vega Frontier Edition source is about Vega 10, not Vega 20. No MI50-specific package outline or source tying FCBGA-1933 to this body size has been located."
+    },
+    "fin_gap": {
+      "min": 1.0,
+      "max": 1.5,
+      "status": "engineering_estimate",
+      "source": null,
+      "note": "Sensitivity-study range only; fin pitch/free area not publicly measured."
+    },
+    "fin_thickness": {
+      "min": 0.3,
+      "max": 0.5,
+      "status": "engineering_estimate",
+      "source": null,
+      "note": "Sensitivity-study range only; fin thickness not publicly measured."
+    }
+  },
+  "features": {
+    "outer_shroud_screw_count": {
+      "value": 6,
+      "status": "owner_teardown_report",
+      "source": "https://diegostrebel.com/posts/instinct_mi_50/",
+      "note": "Teardown author reports six small outer-shroud screws on the genuine 16GB specimen; exact locations and thread size not published."
+    },
+    "vapor_chamber_fastener_count": {
+      "value": 4,
+      "status": "owner_teardown_report",
+      "source": "https://diegostrebel.com/posts/instinct_mi_50/",
+      "note": "Teardown author reports four screws retaining the vapor chamber; exact coordinates and fastener specification not published."
+    },
+    "cooler_regions": {
+      "value": [
+        "long black heatsink",
+        "copper vapor chamber with silver fin stack"
+      ],
+      "status": "owner_teardown_report",
+      "source": "https://diegostrebel.com/posts/instinct_mi_50/",
+      "note": "The teardown photo supports two visually distinct adjacent longitudinal fin fields on the 16GB specimen. Do not assume their exact vertical stacking or transfer the geometry to the 32GB SKU."
+    },
+    "outer_shroud_fastener_thread": {
+      "value": "M2 (candidate)",
+      "status": "unverified_user_supplied_claim",
+      "source": null,
+      "note": "The public teardown confirms six small outer-shroud screws, but does not identify their thread size. Do not model M2 threads or bosses as final-fit geometry until confirmed."
+    },
+    "cooler_fin_architecture": {
+      "value": [
+        "black heatsink fin field",
+        "silver vapor-chamber fin field"
+      ],
+      "status": "qualitatively_visible_in_owner_teardown",
+      "source": "https://diegostrebel.com/images/InstinctMI50/MI50_noshroud.jpg",
+      "note": "Two visually distinct fin regions are visible. Exact relative height, pitch, thickness, open area and spatial relationship require measurement."
+    }
+  },
+  "research_snapshot": "2026-11-20",
+  "variants": {
+    "mi50_16gb": {
+      "amd_product_page": "https://www.amd.com/en/support/downloads/drivers.html/accelerators/instinct/instinct-mi-series/instinct-mi50.html",
+      "published_memory_gb": 16,
+      "published_peak_tdp_w": 300,
+      "published_board_length_mm": 267,
+      "published_board_height": "Full Height",
+      "published_board_width": "Double Slot",
+      "published_cooling": "Passive",
+      "teardown_reference": "https://diegostrebel.com/posts/instinct_mi_50/",
+      "teardown_sample_identity": "Author identifies genuine AMD MI50 16GB; teardown text distinguishes it from a Radeon VII-like Chinese card.",
+      "mechanical_confidence": "medium for qualitative cooler architecture; low for undocumented dimensions",
+      "notes": [
+        "The available exposed-heatsink photographs and six-cover-screw/four-vapor-chamber-fastener observations are for this 16GB specimen.",
+        "Do not assume every OEM/reworked 16GB board shares the same cooler or PCB."
+      ]
+    },
+    "mi50_32gb": {
+      "amd_product_page": "https://www.amd.com/en/support/downloads/drivers.html/accelerators/instinct/instinct-mi-series/instinct-mi50-32gb.html",
+      "published_memory_gb": 32,
+      "published_peak_tdp_w": 300,
+      "published_board_length_mm": 267,
+      "published_board_height": "Full Height",
+      "published_board_width": "Double Slot",
+      "published_cooling": "Passive",
+      "teardown_reference": null,
+      "teardown_sample_identity": null,
+      "mechanical_confidence": "low for internal mechanical equivalence; AMD publishes same outer envelope but no detailed cooler drawing located",
+      "notes": [
+        "AMD publishes the same external form-factor categories and length as the 16GB SKU.",
+        "No directly inspected 32GB MI50 teardown or dimensioned cooler drawing has been established in this research pass.",
+        "A community-maintained VBIOS/hardware reference reports original-AMD and modified/simplified Chinese 32GB PCB variants; treat this as a variant-identification warning, not a verified mechanical drawing.",
+        "Do not assume 16GB heatsink, HBM stack height, component layout, or mounting coordinates transfer unchanged."
+      ]
+    }
+  },
+  "board_revision_policy": {
+    "rule": "Memory capacity is not a sufficient mechanical revision identifier. Store vendor, PCB revision, subsystem IDs, VBIOS part number, cooler part number, and measured geometry as separate identity fields.",
+    "community_reported_32gb_variants": {
+      "source": "https://gist.github.com/evilJazz/14a4c82a67f2c52a6bb5f9cea02f5e13",
+      "reported_variants": [
+        "original AMD PCB",
+        "modified/simplified China PCB"
+      ],
+      "reported_visual_clue": "multiple backplate stickers versus one sticker",
+      "confidence": "low; community-reported and internally inconsistent with AMD official MI50 32GB compute-unit specification",
+      "cad_policy": "do not create separate geometry solely from this report; require physical photos, IDs, or measurements",
+      "notes": [
+        "The community table describes an original 32GB board as 64 CUs / 4096 shaders, but AMD official MI50 32GB specifications list 60 CUs / 3840 stream processors.",
+        "The reported 60-ROP/240-TMU versus 64-ROP/256-TMU distinction may reflect a different GPU SKU or board identity; do not use it to identify a mechanical revision until reconciled.",
+        "The backplate sticker-count clue is not sufficient evidence of a distinct cooler or PCB geometry."
+      ]
+    },
+    "counterfeit_or_reworked_card_warning": {
+      "source": "https://diegostrebel.com/posts/instinct_mi_50/",
+      "reported_distinction": "teardown author distinguishes genuine MI50 16GB (PCI device ID 1002:66A1) from a Radeon-VII-like Chinese card (1002:66AF)",
+      "cad_policy": "identify actual board before applying the MI50 reference geometry"
+    },
+    "cad_policy": "Do not create separate geometry solely from this report; first reconcile product identity against AMD specifications, VBIOS P/N, PCI subsystem IDs, board labels, photos, and physical measurements."
+  },
+  "image_observations": {
+    "source_image": "https://diegostrebel.com/images/InstinctMI50/MI50_noshroud.jpg",
+    "specimen": "genuine MI50 16GB per teardown article context",
+    "observations": [
+      "The exposed assembly visibly contains a long black fin field and a visually distinct silver finned vapor-chamber cooler assembly.",
+      "In the top-down photograph, the two visible fin fields occupy adjacent longitudinal regions; the image does not establish exact overlap, Z-height offset, or their internal contact geometry.",
+      "The photo is not calibrated metrology. Pixel proportions must not be converted to dimensions without a known scale in the same plane and perspective correction.",
+      "Fin ridges/channels are visually dense, but pitch, thickness, depth, free area, and intended airflow direction are not measurable from this image alone."
+    ]
+  },
+  "public_reference_designs": [
+    {
+      "id": "roackim_mi50_92mm_openscad",
+      "title": "AMD MI50 Desktop Cooling Shroud",
+      "url": "https://github.com/roackim/mi50-92mm-shroud",
+      "source_type": "open_source_cad_project",
+      "fan_configuration": "single 92x92x25 mm axial fan; author recommends ARCTIC P9 Max",
+      "geometry_notes": [
+        "three-part design: fan mount, heatsink duct, ramp",
+        "author says duct is intended to force flow through heatsink fins",
+        "author explicitly notes some GPU M2 mounting-hole placement is not yet a perfect fit"
+      ],
+      "license": "MIT",
+      "evidence_class": "public prototype geometry and author-reported fit; not factory drawing or validated thermal result",
+      "cad_policy": "may inspect and adapt subject to MIT license; retain attribution and validate mounting geometry"
+    },
+    {
+      "id": "printables_mi50_triple_slim",
+      "title": "AMD Radeon Instinct MI50 Triple Slim 80mm Fan Shroud",
+      "url": "https://www.printables.com/model/1413245-amd-radeon-instinct-mi50-triple-slim-80mm-fan-shro",
+      "source_type": "published_printable_design",
+      "fan_configuration": "three slim fans; listing title says 80 mm, body text says 90 mm, but parts list identifies ARCTIC P8 Slim (80 mm)",
+      "geometry_notes": [
+        "author says design replaces original shroud and uses four of six original shroud mounting holes",
+        "author reports 4x M2x5 mm replacement screws",
+        "author reports finished height of 55 mm",
+        "author says fans are powered/controlled from motherboard or fan controller, not from the card",
+        "listing contains 80 mm versus 90 mm discrepancy; resolve from downloadable CAD/STL and actual fan before reusing dimensions"
+      ],
+      "license": "CC BY-NC-SA 4.0",
+      "evidence_class": "author-described prototype and fit report; no independently verified thermal/acoustic data",
+      "cad_policy": "study geometry; non-commercial share-alike conditions apply to derivative redistribution; do not assume title fan size is authoritative"
+    },
+    {
+      "id": "thingiverse_mi50_120mm_elbow",
+      "title": "Radeon Instinct MI50/MI25 120mm fan shroud",
+      "url": "https://www.thingiverse.com/thing:7179158",
+      "source_type": "published_printable_design",
+      "fan_configuration": "single 120 mm axial fan with approximately 90-degree routing bend",
+      "geometry_notes": [
+        "author redesigned duct to move fan above/below card to reduce lengthwise clearance needs",
+        "author reports one 120 mm fan was insufficient to keep GPU cool under load and advises temperature monitoring"
+      ],
+      "license": "CC BY-SA (as indexed; verify original Thingiverse listing before redistribution)",
+      "evidence_class": "author-reported fit and qualitative thermal outcome; no controlled test conditions or published temperatures",
+      "cad_policy": "use as negative/validation reference; anecdotal result is not universal"
+    },
+    {
+      "id": "printables_ba10033b12h",
+      "title": "MI50 shroud for BA10033B12H blower",
+      "url": "https://www.printables.com/model/1229329",
+      "source_type": "published_printable_design",
+      "fan_configuration": "AVC BA10033B12H centrifugal blower",
+      "geometry_notes": [
+        "public design exists specifically for MI50 and this blower model",
+        "related design discussion describes a 10-degree sloped transition; earlier U-turn arrangement reportedly had low bracket velocity",
+        "no controlled A/B thermal or pressure-drop dataset located"
+      ],
+      "license": "CC BY (indexed source; verify original listing before redistribution)",
+      "evidence_class": "prototype geometry and author-reported airflow observation",
+      "cad_policy": "use as transition-geometry comparison; verify exact blower suffix and manufacturer curve"
+    }
+  ],
+  "variant_research_notes": [
+    "AMD official 16GB and 32GB product pages both list 60 CUs and 3,840 stream processors, 300 W peak, passive cooling, Full Height, 267 mm length, Double Slot.",
+    "A community VBIOS gist reports two 32GB board families, original AMD and simplified Chinese PCB, with different ROP/TMU counts and sticker patterns. Low-confidence identification lead only.",
+    "The community report original-32GB 64-CU/4,096-shader claim conflicts with AMD official MI50 32GB specification (60 CUs/3,840 stream processors). Do not infer mechanical revision from this claim.",
+    "The community VBIOS matrix lists 113-D1631711-100 and 113-D1631700-111 for 32GB cards; these are firmware part numbers, not heatsink part numbers.",
+    "Public seller photos show multiple external cooler/shroud appearances on cards advertised as MI50 32GB, but seller listings do not establish PCB revision or internal cooler geometry."
+  ]
+}

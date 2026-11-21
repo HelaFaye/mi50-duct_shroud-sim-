@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "model": "AMD Radeon Instinct MI50",
+  "units": "mm",
+  "scope": "provisional common mechanical envelope; verify exact board revision and cooler assembly",
+  "dimensions": {
+    "board_length": {
+      "value": 267.0,
+      "status": "manufacturer_specified",
+      "source": "https://www.amd.com/en/support/downloads/drivers.html/accelerators/instinct/instinct-mi-series/instinct-mi50.html",
+      "note": "AMD specifies 10.5 in (267 mm)."
+    },
+    "board_height": {
+      "value": 111.15,
+      "status": "form_factor_nominal",
+      "source": "https://studylib.net/doc/28414113/pci-express-cem-r2.0-cb",
+      "note": "Earlier PCIe CEM full-height maximum; AMD lists Full Height but does not give this numeric dimension."
+    },
+    "slot_envelope_thickness": {
+      "value": 40.0,
+      "status": "form_factor_estimate",
+      "source": "https://www.amd.com/en/support/downloads/drivers.html/accelerators/instinct/instinct-mi-series/instinct-mi50.html",
+      "note": "AMD lists Double Slot, not a measured assembled thickness."
+    },
+    "original_cover_thickness": {
+      "value": 0.5,
+      "status": "unverified_estimate",
+      "source": "https://diegostrebel.com/posts/instinct_mi_50/",
+      "note": "0.5 mm is a user-supplied estimate. Public teardown confirms a removable outer shroud but provides no sheet-thickness measurement."
+    },
+    "deshrouded_cooler_thickness": {
+      "min": 35.0,
+      "max": 37.0,
+      "status": "unverified_estimate",
+      "source": "https://diegostrebel.com/posts/instinct_mi_50/",
+      "note": "35\u201337 mm is a user-supplied estimate. Public teardown images show separate black heatsink and silver vapor-chamber fin regions but provide no calibrated thickness measurement."
+    },
+    "vega_package_footprint": {
+      "value": 47.5,
+      "status": "unverified_user_supplied_candidate",
+      "source": null,
+      "note": "Candidate value supplied in the 2026-11-20 research discussion. Do not treat as confirmed for Vega 20/MI50: the commonly cited 47.3 mm Vega Frontier Edition source is about Vega 10, not Vega 20. No MI50-specific package outline or source tying FCBGA-1933 to this body size has been located."
+    },
+    "fin_gap": {
+      "min": 1.0,
+      "max": 1.5,
+      "status": "engineering_estimate",
+      "source": null,
+      "note": "Sensitivity-study range only; fin pitch/free area not publicly measured."
+    },
+    "fin_thickness": {
+      "min": 0.3,
+      "max": 0.5,
+      "status": "engineering_estimate",
+      "source": null,
+      "note": "Sensitivity-study range only; fin thickness not publicly measured."
+    }
+  },
+  "features": {
+    "outer_shroud_screw_count": {
+      "value": 6,
+      "status": "owner_teardown_report",
+      "source": "https://diegostrebel.com/posts/instinct_mi_50/"
+    },
+    "vapor_chamber_fastener_count": {
+      "value": 4,
+      "status": "owner_teardown_report",
+      "source": "https://diegostrebel.com/posts/instinct_mi_50/"
+    },
+    "cooler_regions": {
+      "value": [
+        "long black heatsink",
+        "copper vapor chamber with silver fin stack"
+      ],
+      "status": "owner_teardown_report",
+      "source": "https://diegostrebel.com/posts/instinct_mi_50/"
+    },
+    "outer_shroud_fastener_thread": {
+      "value": "M2 (candidate)",
+      "status": "unverified_user_supplied_claim",
+      "source": null,
+      "note": "The public teardown confirms six small outer-shroud screws, but does not identify their thread size. Do not model M2 threads or bosses as final-fit geometry until confirmed."
+    },
+    "cooler_fin_architecture": {
+      "value": [
+        "black heatsink fin field",
+        "silver vapor-chamber fin field"
+      ],
+      "status": "qualitatively_visible_in_owner_teardown",
+      "source": "https://diegostrebel.com/images/InstinctMI50/MI50_noshroud.jpg",
+      "note": "Two visually distinct fin regions are visible. Exact relative height, pitch, thickness, open area and spatial relationship require measurement."
+    }
+  }
+}
