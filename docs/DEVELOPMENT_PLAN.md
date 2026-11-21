@@ -36,8 +36,8 @@ For each overlay or focused change, review the diff, run `git diff --check`, com
 | ID | Milestone | State | Depends on |
 |---|---|---|---|
 | M0 | Repository baseline, scope audit, and automated Python CI | Complete | — |
-| M1 | Specify uncertainty semantics and input-data contract | Next | M0 |
-| M2 | Propagate curve/input uncertainty through the operating-point solver | Planned | M1 |
+| M1 | Specify uncertainty semantics and input-data contract | Draft for review | M0 |
+| M2 | Propagate curve/input uncertainty through the operating-point solver | Blocked pending M1 acceptance | M1 |
 | M3 | Fan-RPM and system-resistance sensitivity analysis | Planned | M1; M2 for probabilistic comparisons |
 | M4 | Evidence-based thermal model progression | Planned | M2; physical thermal measurements |
 | M5 | Recover or develop revision-specific CAD and CFD assets | Separate workstream | Verified physical geometry and provenance |
@@ -52,11 +52,11 @@ Acceptance evidence:
 - README no longer presents absent CAD/CFD files as implemented.
 - GitHub Actions compiles Python modules and runs the unittest suite on Python 3.10, 3.12, and 3.14.
 - Local suite: 21/21 passing on Python 3.14.
-- GitHub Actions run 44953907969: all three matrix jobs completed successfully.
+- Main GitHub Actions run 44953907969: all three matrix jobs completed successfully.
 
 ### M1 — Specify uncertainty semantics and input-data contract
 
-**Next milestone. Do not begin Monte Carlo implementation until this specification is reviewed.**
+**Design draft prepared; owner review required.** See [`UNCERTAINTY_MODEL_SPEC.md`](UNCERTAINTY_MODEL_SPEC.md).
 
 The specification must settle:
 
@@ -77,9 +77,11 @@ Design deliverables:
 - Input validation rules for missing, negative, non-finite, inconsistent, and unsupported uncertainty fields.
 - Worked examples using synthetic data clearly marked as synthetic; no invented MI50 measurements or uncertainty values.
 
-**Acceptance gate:** review the schema and statistical assumptions before adding stochastic solver code. A user must be able to tell whether an input is a measurement, a manufacturer specification, a digitization estimate, or a synthetic test fixture.
+**Acceptance gate:** review and accept the M1 checklist in `UNCERTAINTY_MODEL_SPEC.md` before adding stochastic solver code. A user must be able to tell whether an input is a measurement, a manufacturer specification, a digitization estimate, or a synthetic test fixture. The draft is not yet an approved implementation contract.
 
 ### M2 — Propagate uncertainty through the operating point
+
+**Blocked until M1 is reviewed and accepted.**
 
 Implement uncertainty propagation only after M1 is accepted.
 
@@ -88,7 +90,7 @@ Expected behavior:
 - Preserve the existing deterministic API and CLI output when uncertainty mode is not requested.
 - Provide an explicit random seed and trial count for reproducibility.
 - Sample uncertainty according to the M1 distributions and correlation model; do not silently substitute defaults.
-- Preserve monotonic/physical curve constraints using a documented method. Do not silently repair malformed sampled curves without reporting it.
+- Preserve monotonic/physical curve constraints using a documented method. Do not silently repair malformed sampled curves without reporting them.
 - Continue refusing extrapolation for every trial.
 - Report requested trials, valid trials, rejected/failed trials and reasons, plus median and stated interval quantiles for total flow, per-fan flow, pressure, and bulk-air temperature rise.
 - Clearly label the interval as conditional on the chosen input distributions and model assumptions, not as a guarantee of real-world coverage.
@@ -132,4 +134,4 @@ A milestone is complete only when:
 - deterministic and edge-case tests cover the new behavior;
 - the complete local test suite passes;
 - GitHub Actions passes on the configured Python matrix;
-- `docs/PROGRESS.md` records the resulting commit, evidence, and any remaining limitations.
+- `docs/PROGRESS.md` records the resulting commit, evidence, and any remaining physical-validation limits.

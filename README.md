@@ -26,6 +26,7 @@ The engineering roadmap, milestone acceptance criteria, branching policy, and cu
 
 - [`docs/DEVELOPMENT_PLAN.md`](docs/DEVELOPMENT_PLAN.md) — milestone plan and engineering gates.
 - [`docs/PROGRESS.md`](docs/PROGRESS.md) — current baseline, completed work, active milestone, and dated progress log.
+- [`docs/UNCERTAINTY_MODEL_SPEC.md`](docs/UNCERTAINTY_MODEL_SPEC.md) — M1 uncertainty-data and propagation design draft; review required before stochastic implementation.
 
 Keep `main` as the validated integration baseline. Perform ongoing engineering work on focused `wip/<topic>` branches and merge through pull requests after local validation and CI pass. Update the progress log when a milestone changes state or an engineering decision changes.
 
