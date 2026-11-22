@@ -38,7 +38,7 @@ For each overlay or focused change, inspect its diff, run `git diff --check`, co
 | M0 | Repository baseline, scope audit, and automated Python CI | Complete | — |
 | M1 | Specify uncertainty semantics and input-data contract | Complete — v1.0 accepted | M0 |
 | M2 | Propagate curve/input uncertainty through operating-point solver | Implementation in progress — v1 prototype | M1 |
-| M3 | Fan-RPM and system-resistance sensitivity analysis | Planned | M1; M2 for probabilistic comparisons |
+| M3 | Fan-RPM and system-resistance sensitivity analysis | Implementation in progress — deterministic sensitivity prototype | M1; M2 for probabilistic comparisons |
 | M4 | Evidence-based thermal model progression | Planned | M2; physical thermal measurements |
 | M5 | Recover or develop revision-specific CAD and CFD assets | Separate workstream | Verified physical geometry and provenance |
 
@@ -69,11 +69,14 @@ Acceptance tests include zero-uncertainty recovery, source sharing, seeded repro
 
 ### M3 — Fan-RPM and system-resistance sensitivity
 
-Add deterministic scenario sweeps first. Probabilistic sweeps may follow after M2 is validated.
+**Implementation in progress — deterministic scenario-sweep prototype.** The first opt-in implementation is documented in [`M3_SENSITIVITY_ENGINE.md`](M3_SENSITIVITY_ENGINE.md) and implemented in [`operating_point_sensitivity.py`](../analysis/operating_point_sensitivity.py). It calls the existing solver without changing its API or CLI.
 
-- Report sensitivity to system resistance, fan count, and RPM over an explicit range.
-- If affinity laws are used, expose similarity assumptions and Reynolds/regime limitations; do not silently extrapolate the 4300 RPM digitized curve.
-- Keep fan speed, electrical input, and system-loss changes distinguishable.
+- Sweep explicit RPM values, identical parallel-fan counts, and positive system-resistance multipliers around an explicit baseline.
+- Keep RPM at the reference-curve speed by default. Affinity-law scaling requires explicit opt-in, labels derived curves, and records constant-density/fixed-geometry/similarity assumptions and Reynolds-regime caveats.
+- Support the existing quadratic screening reference and uniform pressure scaling of a supplied tabulated system curve; preserve the solver's no-extrapolation behavior and retain failed scenarios.
+- Compare every solved scenario with the reference-RPM, baseline-fan-count, resistance-multiplier-1.0 case.
+- Do not infer electrical input from RPM. Keep fan speed, motor/electrical input, and system-resistance changes distinct.
+- The current P9 curve is approximate manual digitization and the MI50 system-curve template is empty. Outputs using the current quadratic reference are hypothetical screening scenarios, not measured MI50 performance. Probabilistic sweeps remain deferred until M2 is accepted for that use.
 
 ### M4 — Evidence-based thermal model progression
 
