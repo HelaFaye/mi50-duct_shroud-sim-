@@ -36,7 +36,7 @@ For each overlay or focused change, review the diff, run `git diff --check`, com
 | ID | Milestone | State | Depends on |
 |---|---|---|---|
 | M0 | Repository baseline, scope audit, and automated Python CI | Complete | — |
-| M1 | Specify uncertainty semantics and input-data contract | Draft for review | M0 |
+| M1 | Specify uncertainty semantics and input-data contract | Review-ready proposal; owner acceptance pending | M0 |
 | M2 | Propagate curve/input uncertainty through the operating-point solver | Blocked pending M1 acceptance | M1 |
 | M3 | Fan-RPM and system-resistance sensitivity analysis | Planned | M1; M2 for probabilistic comparisons |
 | M4 | Evidence-based thermal model progression | Planned | M2; physical thermal measurements |
@@ -56,46 +56,39 @@ Acceptance evidence:
 
 ### M1 — Specify uncertainty semantics and input-data contract
 
-**Design draft prepared; owner review required.** See [`UNCERTAINTY_MODEL_SPEC.md`](UNCERTAINTY_MODEL_SPEC.md).
+**Review-ready proposal v0.2 prepared; owner acceptance required.** See [`UNCERTAINTY_MODEL_SPEC.md`](UNCERTAINTY_MODEL_SPEC.md).
 
-The specification must settle:
+The review draft proposes decisions for:
 
-1. What each uncertainty value means: standard uncertainty (1σ), expanded uncertainty with coverage factor, instrument accuracy bound, repeatability standard deviation, or chart-digitization tolerance. These are not interchangeable.
-2. Which terms are point-specific and which are shared/systematic across a curve (for example, a common flow-meter calibration factor or pressure zero offset).
-3. Whether flow and pressure errors are correlated, both within a point and across points.
-4. How fan-chart digitization uncertainty is derived from chart resolution, line thickness, axis calibration, and digitization method.
-5. Which probability distributions are justified by the source. A Gaussian distribution must not be assumed automatically for a stated tolerance or bounded accuracy specification.
-6. How uncertainty sampling preserves physically valid curve shapes and handles the anchored zero-flow points.
-7. How RPM uncertainty and any RPM-based fan-curve scaling are represented.
-8. How out-of-range samples, unbracketed operating points, and invalid sampled curves are counted and reported.
+1. Metrology vocabulary and separation of evaluation method, uncertainty metric, and probability distribution.
+2. A versioned per-curve JSON sidecar bound to exact CSV bytes by SHA-256, with pressure/flow basis and operating-condition provenance.
+3. Shared source IDs as shared latent draws, explicit independence between distinct IDs, and fail-closed handling of unsupported correlation.
+4. Normal, Student-t, uniform, and triangular correction distributions; empirical resampling deferred; hard bounds not automatically sampled.
+5. Conditional rejection sampling for physical curve constraints, preserving exact anchors and recording every invalid or unbracketed attempt.
+6. Fixed tabulated curves and fixed operating conditions for M2 v1; RPM scaling and uncertain quadratic-reference inputs deferred.
+7. Joint output samples, marginal coverage intervals, and output covariance/correlation reporting.
 
-Design deliverables:
-
-- A documented versioned uncertainty-data schema for both fan and system curves.
-- Explicit unit and uncertainty-type definitions.
-- A stated correlation model or an explicit declaration that a term is treated as independent.
-- Input validation rules for missing, negative, non-finite, inconsistent, and unsupported uncertainty fields.
-- Worked examples using synthetic data clearly marked as synthetic; no invented MI50 measurements or uncertainty values.
-
-**Acceptance gate:** review and accept the M1 checklist in `UNCERTAINTY_MODEL_SPEC.md` before adding stochastic solver code. A user must be able to tell whether an input is a measurement, a manufacturer specification, a digitization estimate, or a synthetic test fixture. The draft is not yet an approved implementation contract.
+**Acceptance gate:** owner review and acceptance of the checklist in `UNCERTAINTY_MODEL_SPEC.md`. The review draft is not an approved implementation contract. No Monte Carlo or stochastic solver code is authorized before acceptance.
 
 ### M2 — Propagate uncertainty through the operating point
 
 **Blocked until M1 is reviewed and accepted.**
 
-Implement uncertainty propagation only after M1 is accepted.
+The proposed v1 scope is limited to tabulated fan and system curves. It holds fan count, RPM, voltage/PWM, heat load, air density, and specific heat fixed. The quadratic system-reference model and RPM scaling are out of scope.
 
-Expected behavior:
+Expected behavior after M1 acceptance:
 
-- Preserve the existing deterministic API and CLI output when uncertainty mode is not requested.
-- Provide an explicit random seed and trial count for reproducibility.
-- Sample uncertainty according to the M1 distributions and correlation model; do not silently substitute defaults.
-- Preserve monotonic/physical curve constraints using a documented method. Do not silently repair malformed sampled curves without reporting them.
-- Continue refusing extrapolation for every trial.
-- Report requested trials, valid trials, rejected/failed trials and reasons, plus median and stated interval quantiles for total flow, per-fan flow, pressure, and bulk-air temperature rise.
-- Clearly label the interval as conditional on the chosen input distributions and model assumptions, not as a guarantee of real-world coverage.
+- Preserve deterministic API and CLI behavior when uncertainty mode is not requested.
+- Bind sidecars to exact central-value CSV hashes and reject mismatched or unknown schema versions.
+- Draw each unique source ID once per attempted trial and apply that draw to all linked targets, including cross-curve targets.
+- Use a fixed attempted-trial budget; never silently retry invalid samples until a target number of successful roots is reached.
+- Apply the existing curve validators and no-extrapolation solver; never repair or sort sampled curves.
+- Record invalid-curve, no-positive-root, unbracketed, range, and solver failures by category.
+- Report valid fraction, marginal coverage intervals, and covariance/correlation from the same joint output samples.
+- Explicitly label all summaries as conditional on the declared PDFs, dependence assumptions, physically valid curves, and in-range roots.
+- Reject missing/unquantified uncertainty by default; any held-fixed exclusion must be explicit and reported.
 
-Acceptance tests should cover zero-uncertainty recovery of the deterministic result, seeded reproducibility, invalid-input rejection, curve-shape constraints, out-of-range handling, and quantile calculations on analytically tractable synthetic cases.
+Acceptance tests should cover zero-uncertainty recovery, source sharing, cross-sidecar dependence, seeded reproducibility, unsupported-correlation rejection, endpoint invariance, invalid-curve accounting, no extrapolation, root failures, joint output covariance, and quantile calculations on analytically tractable synthetic cases.
 
 ### M3 — Fan-RPM and system-resistance sensitivity
 
@@ -117,7 +110,7 @@ Progression:
 1. Keep bulk-air rise explicitly named and scoped.
 2. Add a thermal-resistance/network model only when heat paths, component heat loads, and resistance values have defensible provenance.
 3. Keep GPU die, HBM, VRM, heatsink, inlet, and outlet temperatures distinct where data permit.
-4. Validate against sustained-load measurements that include board power, fan RPM, inlet/outlet air temperature, component telemetry, ambient conditions, and workload duration.
+4. Validate against sustained-load measurements that include board power, fan RPM, inlet/outlet air temperature, component telemetry, ambient conditions, workload duration, and sensor calibration.
 
 No safe operating limit or component-temperature prediction should be claimed from airflow alone.
 
