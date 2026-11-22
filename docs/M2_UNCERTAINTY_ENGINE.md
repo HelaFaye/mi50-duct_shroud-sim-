@@ -1,6 +1,6 @@
 # M2 v1 uncertainty propagation engine
 
-_Status: first implementation overlay prepared; integration validation and CI remain pending._
+_Status: first M2 v1 implementation committed as `f7f3b1fab65493cfc885befff4bee7c2dfe70a58`; 51-test local integration and Python 3.10/3.12/3.14 CI passed. M2 remains in progress pending further implementation review and acceptance._
 
 ## Purpose
 
@@ -39,9 +39,11 @@ python3 -m analysis.operating_point_uncertainty \
   --output <report.json>
 ```
 
-`--minimum-valid-fraction` optionally supplies an explicit yield threshold. The engine has no hidden default threshold. `--allow-held-fixed` is required when the sidecars declare any uncertainty coordinates held fixed.
+`--minimum-valid-fraction` optionally supplies an explicit yield threshold. There is no hidden default. Without this option, the report records the valid fraction and leaves `minimum_valid_fraction_met` unset; it does not automatically classify a low yield as inconclusive. Supply a threshold when valid yield is an acceptance criterion. `--allow-held-fixed` is required when the sidecars declare any uncertainty coordinates held fixed.
 
 The requested trial count is the attempted count, not a target number of successful roots. Every unique source is drawn once per attempt, even when another source's draw is invalid; this keeps the random stream and attempt semantics reproducible. `outcome_counts` accounts for every attempt, including `valid_root`; failures are also retained separately by category. Fewer than two valid roots are always inconclusive because sample standard uncertainty and covariance cannot be estimated. If an explicit minimum valid fraction is not met, the run is also inconclusive and output intervals are suppressed. No extrapolation or curve repair is performed.
+
+The two-valid-root minimum is only a mathematical minimum for sample standard deviation and covariance. It is not a statistical precision criterion for empirical tail quantiles. Review the valid count and fraction alongside every interval; further M2 work may add an explicit minimum valid-sample count or Monte Carlo quantile-precision diagnostic, without silently imposing a universal threshold.
 
 ## Report
 
@@ -60,5 +62,7 @@ Intervals are marginal and conditional on the declared PDFs, dependence assumpti
 ## Verification coverage
 
 The 30 new tests use generated synthetic curves and synthetic sidecars. They cover CSV hash binding, schema-version and unknown-field rejection, duplicate JSON keys, source sharing across curves, conflicting source definitions, unsupported dependence, explicit held-fixed opt-in, coordinate/anchor validation, measurement and operating-condition compatibility, supported distributions, seeded reproducibility, full source-draw accounting for invalid attempts, exact attempted-trial accounting, insufficient-valid-sample handling, invalid curve/effect reporting, no-extrapolation/root-range behavior, zero-uncertainty recovery, marginal quantiles, and joint covariance/correlation.
+
+The original 21 tests plus the 30 new tests passed locally: 51/51 total. GitHub Actions run [44986689330](https://github.com/HelaFaye/mi50-duct_shroud-sim-/actions/runs/44986689330) also passed compilation and the full unit-test step on Python 3.10, 3.12, and 3.14.
 
 No real MI50 uncertainty result can be produced from the current repository: the P9 curve is approximate manual digitization without defensible quantified uncertainty, and the MI50 system curve remains a header-only template. Use these synthetic tests for software verification only.

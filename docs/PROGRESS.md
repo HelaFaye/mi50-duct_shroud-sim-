@@ -8,9 +8,9 @@ _Last updated: 2026-11-21_
 - Stable branch: `main`
 - Stable baseline commit: `eca4f4493e4df18843932a3e755299645ef1822f`
 - Active engineering branch: `wip/uncertainty-aware-operating-point`
-- Last confirmed remote WIP commit before this overlay: `3c300ee02a2fbb7da8ae05094239ec1e7dea341f`
+- Current confirmed remote WIP HEAD: `f7f3b1fab65493cfc885befff4bee7c2dfe70a58`
 - M1: **v1.0 accepted** on 2026-11-21 by instruction to proceed with the v0.2 recommendations without amendments.
-- M2: **v1 implementation overlay prepared; repository integration validation and CI pending**.
+- M2: **v1 prototype committed, locally validated, and CI-verified; implementation remains in progress.**
 
 ## Verified baseline
 
@@ -19,22 +19,32 @@ _Last updated: 2026-11-21_
 - The repository contains the deterministic fan/system operating-point solver, fan/system curve data and template, photogrammetry scale fitter, documentation, static site, tests, and Python CI workflow.
 - Absent CAD/OpenSCAD sources, reference STL meshes, older duct-sizing/acoustic scripts, fan catalog, and CFD-ready assets are documented as absent.
 - The solver supports the quadratic screening model and tabulated system curve, identical parallel fans, piecewise-linear interpolation, and no-extrapolation behavior.
-- Original local suite: 21/21 tests passed on Python 3.14.
+- Original suite: 21/21 tests passed locally on Python 3.14 and on the original CI matrix.
 - Main CI run [44953907969](https://github.com/HelaFaye/mi50-duct_shroud-sim-/actions/runs/44953907969): Python 3.10, 3.12, and 3.14 passed.
 
 ### WIP branch and M1 publication
 
 - WIP branch: `wip/uncertainty-aware-operating-point`.
 - Plan/progress tracking commit: `1a870566f3f412c79972589d93e16ca696a97ea8`.
-- M1 review specification commit: `3c300ee02a2fbb7da8ae05094239ec1e7dea341f`.
-- Progress-log correction commit: `857e6b91838268250352e44ec0a5ec90d97371b4`.
-- CI run [44954367135](https://github.com/HelaFaye/mi50-duct_shroud-sim-/actions/runs/44954367135), run [44956308326](https://github.com/HelaFaye/mi50-duct_shroud-sim-/actions/runs/44956308326), run [44956622384](https://github.com/HelaFaye/mi50-duct_shroud-sim-/actions/runs/44956622384), and run [44976693486](https://github.com/HelaFaye/mi50-duct_shroud-sim-/actions/runs/44976693486) passed their Python 3.10, 3.12, and 3.14 jobs.
-- The latest confirmed remote WIP commit before this overlay was `3c300ee02a2fbb7da8ae05094239ec1e7dea341f`, with CI run `44976693486` successful.
+- M1 specification and review commit: `3c300ee02a2fbb7da8ae05094239ec1e7dea341f`.
+- Earlier progress-log correction commit: `857e6b91838268250352e44ec0a5ec90d97371b4`.
+- M1 review CI run [44976693486](https://github.com/HelaFaye/mi50-duct_shroud-sim-/actions/runs/44976693486): Python 3.10, 3.12, and 3.14 passed.
+- M1 v1.0 acceptance and implementation baseline are documented in [`UNCERTAINTY_MODEL_SPEC.md`](UNCERTAINTY_MODEL_SPEC.md).
+
+### M2 v1 prototype committed and verified
+
+- Implementation commit: [`f7f3b1fab65493cfc885befff4bee7c2dfe70a58`](https://github.com/HelaFaye/mi50-duct_shroud-sim-/commit/f7f3b1fab65493cfc885befff4bee7c2dfe70a58).
+- The commit adds the opt-in `analysis/operating_point_uncertainty.py` engine, the v1 sidecar JSON Schema, 30 synthetic uncertainty-engine tests, usage/report documentation, and plan/progress updates.
+- The deterministic solver `analysis/fan_operating_point.py` was not modified by this implementation commit.
+- Local integration verification: `compileall` passed, all 51 tests passed (21 existing + 30 uncertainty tests), `git diff --check` passed, and `python3 -m json.tool` parsed the sidecar schema.
+- GitHub Actions run [44986689330](https://github.com/HelaFaye/mi50-duct_shroud-sim-/actions/runs/44986689330): Python 3.10, 3.12, and 3.14 all passed compilation and the full unittest step.
+- The GitHub WIP branch head was independently confirmed at `f7f3b1fab65493cfc885befff4bee7c2dfe70a58`.
+- M2 remains **in progress**, not complete. Additional implementation review and acceptance work remain; synthetic tests and CI establish software verification, not hardware validation.
 
 ## Current engineering truth
 
 - `data/system_curves/mi50_system_curve_template.csv` is header-only. No measured MI50 system curve is available.
-- The `2.0 mmH2O at 50 CFM` quadratic reference remains a hypothetical screening input.
+- The `2.0 mmH2O at 50 CFM` quadratic reference remains a hypothetical screening input and is not supported by M2 v1, which requires tabulated curves.
 - The ARCTIC P9 Max 4300 RPM P–Q data are approximate manual chart digitization, not manufacturer numerical data or a measured fan curve. There are no defensible quantified digitization uncertainties in the repository.
 - The previous 60.52 CFM / 2.930 mmH2O operating point is conditional on the hypothetical system reference and digitized fan curve; it is not an installed MI50 performance measurement.
 - The previous 8.67 °C value is ideal bulk-air temperature rise at assumed 300 W and calculated airflow, not GPU junction, HBM, VRM, or heatsink temperature.
@@ -42,19 +52,22 @@ _Last updated: 2026-11-21_
 
 ## Active milestone: M2 — uncertainty propagation
 
-M1 is complete. The approved decisions are recorded in [`UNCERTAINTY_MODEL_SPEC.md`](UNCERTAINTY_MODEL_SPEC.md). The v1 sidecar schema is [`../schemas/curve-uncertainty-v1.schema.json`](../schemas/curve-uncertainty-v1.schema.json).
+M1 is complete. Its accepted design baseline is [`UNCERTAINTY_MODEL_SPEC.md`](UNCERTAINTY_MODEL_SPEC.md). The v1 sidecar schema is [`../schemas/curve-uncertainty-v1.schema.json`](../schemas/curve-uncertainty-v1.schema.json), and engine behavior is documented in [`M2_UNCERTAINTY_ENGINE.md`](M2_UNCERTAINTY_ENGINE.md).
 
-The first M2 overlay adds:
+The committed M2 prototype provides:
 
-- opt-in `analysis/operating_point_uncertainty.py` without modifying the deterministic solver;
-- strict sidecar validation and exact CSV SHA-256 binding;
+- an opt-in analysis module without modifying the deterministic solver;
+- strict sidecar validation and exact central-value CSV SHA-256 binding;
 - shared source-ID sampling across fan and system curves;
 - normal, Student-t, uniform, and triangular source distributions;
-- physical-curve rejection sampling and exact trial/failure accounting;
+- physical-curve rejection sampling and fixed attempted-trial/failure accounting;
+- no extrapolation and no silent curve repair;
 - marginal output intervals plus joint covariance/correlation reporting;
-- synthetic tests and engine documentation.
+- 30 synthetic engine tests, integrated into the 51-test suite.
 
-The prototype currently has 30 synthetic uncertainty-engine tests. In an isolated test harness using a compatibility shim for the existing solver interface, all 30 pass; this is not yet full-checkout integration evidence. The overlay is not yet part of a repository commit. Local checkout integration, the complete combined test suite, and GitHub CI remain pending. Do not create sidecars with invented uncertainty values or use the engine to claim real MI50 performance.
+`--minimum-valid-fraction` is optional and has no hidden default. Without it, the report exposes the valid fraction but does not apply a yield threshold; a run with at least two valid roots can still be marked `conditional_result` even when the valid fraction is small. For runs where yield is an acceptance criterion, supply an explicit threshold and inspect `minimum_valid_fraction_met`. At least two valid roots are required for sample standard uncertainties and covariance; that mathematical minimum is not a guarantee that empirical tail quantiles are statistically stable.
+
+Do not create sidecars with invented uncertainty values or use the engine to claim real MI50 performance. Before real-data use, the fan and system curves need compatible measurement definitions and defensible quantified uncertainty sources. Further M2 code review should consider whether minimum valid sample counts or Monte Carlo quantile-precision diagnostics are needed for the intended reporting use.
 
 ## Progress log
 
@@ -65,10 +78,9 @@ The prototype currently has 30 synthetic uncertainty-engine tests. In an isolate
 | 2026-11-21 | Added Python CI matrix and repository status audit | Main commit `eca4f4493e4df18843932a3e755299645ef1822f` |
 | 2026-11-21 | Verified main CI | Run `44953907969`; Python 3.10, 3.12, and 3.14 passed |
 | 2026-11-21 | Added development plan and progress tracking | Commit `1a870566f3f412c79972589d93e16ca696a97ea8` |
-| 2026-11-21 | Published M1 uncertainty specification review draft | Commit `a4571eaa60ee07475aab6da0732280ea05e25139` |
-| 2026-11-21 | Corrected M1 publication/CI progress evidence | Commit `857e6b91838268250352e44ec0a5ec90d97371b4`; CI run `44956622384` passed |
-| 2026-11-21 | Refined M1 v0.2 review proposal | Commit `3c300ee02a2fbb7da8ae05094239ec1e7dea341f`; CI run `44976693486` passed |
-| 2026-11-21 | Accepted M1 v1.0 recommendations and prepared first M2 engine overlay | Owner instruction: proceed without amendments; repository integration and CI pending |
+| 2026-11-21 | Published and refined M1 uncertainty specification | Review commit `3c300ee02a2fbb7da8ae05094239ec1e7dea341f`; CI run `44976693486` passed |
+| 2026-11-21 | Accepted M1 v1.0 recommendations | Owner instruction: proceed with the v0.2 recommendations without amendments |
+| 2026-11-21 | Added M2 v1 tabulated-curve uncertainty prototype | Commit `f7f3b1fab65493cfc885befff4bee7c2dfe70a58`; 51 local tests passed; CI run `44986689330` passed all three Python versions |
 
 ## Update protocol
 
