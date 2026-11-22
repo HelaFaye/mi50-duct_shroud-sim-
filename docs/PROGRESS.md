@@ -11,7 +11,7 @@ _Last updated: 2026-11-22_
 - Latest verified M2 implementation commit: `0f8e86976c7053c84b72bf3a4dfdcdf408f52e28`
 - M1: **v1.0 accepted** on 2026-11-21 by instruction to proceed with the v0.2 recommendations without amendments.
 - M2: **v1.1 DKW quantile-precision refinement committed, locally validated, and CI-verified; the overall M2 milestone remains in progress.**
-- M3: **initial deterministic sensitivity implementation committed and CI-verified; scenario-failure-isolation hardening is locally verified and awaiting follow-up CI.**
+- M3: **deterministic sensitivity prototype and scenario-failure-isolation hardening committed and CI-verified; physical input-data validation and full milestone acceptance remain open.**
 
 ## Verified baseline
 
@@ -87,7 +87,7 @@ Do not create sidecars with invented uncertainty values or use the engine to cla
 - The initial implementation added the opt-in deterministic RPM/fan-count/system-resistance sweep without modifying the deterministic solver API or CLI.
 - Initial local verification: 85/85 tests passed on Python 3.14.7.
 - GitHub Actions run [45011421134](https://github.com/HelaFaye/mi50-duct_shroud-sim-/actions/runs/45011421134): Python 3.10, 3.12, and 3.14 all passed.
-- Follow-up hardening retains invalid per-scenario fan and tabulated-system curve transformations as categorized failed rows instead of aborting otherwise valid scenarios. Two new regression tests bring the local suite to 87/87 passing on Python 3.14.7. This follow-up is not yet committed or CI-verified.
+- Follow-up hardening in commit [`ede1e38`](https://github.com/HelaFaye/mi50-duct_shroud-sim-/commit/ede1e38a70d1d0df93dcb663b57120f9b530a183) retains invalid per-scenario fan and tabulated-system curve transformations as categorized failed rows instead of aborting otherwise valid scenarios. The full suite passes 87/87 locally on Python 3.14.7; [CI run 45012233377](https://github.com/HelaFaye/mi50-duct_shroud-sim-/actions/runs/45012233377) passed all three Python versions.
 - Affinity-law scaling remains explicit opt-in. Geometric, kinematic, and dynamic similarity, density/compressibility, Reynolds number, and tip-speed Mach number are applicability checks.
 - The P9 Max CSV remains approximate manual digitization. ARCTIC's official documentation lists a separate `P9 Max - PQ Curve for CFD` workbook, but its contents and equivalence to the chart conditions have not yet been inspected or validated.
 - No measured MI50 system curve or physical MI50 performance validation is available. Quadratic reference scenarios remain hypothetical screening only.
@@ -105,7 +105,7 @@ Do not create sidecars with invented uncertainty values or use the engine to cla
 | 2026-11-21 | Accepted M1 v1.0 recommendations | Owner instruction: proceed with the v0.2 recommendations without amendments |
 | 2026-11-21 | Added M2 v1 tabulated-curve uncertainty prototype | Commit `f7f3b1fab65493cfc885befff4bee7c2dfe70a58`; 51 local tests passed; CI run `44986689330` passed all three Python versions |
 | 2026-11-21 | Added M2 v1.1 DKW Monte Carlo quantile-precision reporting | Commit [`0f8e869`](https://github.com/HelaFaye/mi50-duct_shroud-sim-/commit/0f8e86976c7053c84b72bf3a4dfdcdf408f52e28); 56/56 local tests passed; [CI run 44999641433](https://github.com/HelaFaye/mi50-duct_shroud-sim-/actions/runs/44999641433) passed compilation and unit tests on Python 3.10, 3.12, and 3.14 |
-| 2026-11-22 | Added M3 deterministic sensitivity prototype | Commit [`5919163`](https://github.com/HelaFaye/mi50-duct_shroud-sim-/commit/5919163e348cb757293b92dd0d82eba5dd46c80d); initial 85/85 tests passed locally; [CI run 45011421134](https://github.com/HelaFaye/mi50-duct_shroud-sim-/actions/runs/45011421134) passed all three Python versions; follow-up hardening adds two tests and awaits CI |
+| 2026-11-22 | Added M3 deterministic sensitivity prototype | Commit [`5919163`](https://github.com/HelaFaye/mi50-duct_shroud-sim-/commit/5919163e348cb757293b92dd0d82eba5dd46c80d); initial 85/85 tests passed locally; [CI run 45011421134](https://github.com/HelaFaye/mi50-duct_shroud-sim-/actions/runs/45011421134) passed all three Python versions |
 
 ## Update protocol
 

@@ -38,7 +38,7 @@ For each overlay or focused change, inspect its diff, run `git diff --check`, co
 | M0 | Repository baseline, scope audit, and automated Python CI | Complete | — |
 | M1 | Specify uncertainty semantics and input-data contract | Complete — v1.0 accepted | M0 |
 | M2 | Propagate curve/input uncertainty through operating-point solver | Implementation in progress — v1 prototype | M1 |
-| M3 | Fan-RPM and system-resistance sensitivity analysis | Implementation in progress — deterministic sensitivity prototype | M1; M2 for probabilistic comparisons |
+| M3 | Fan-RPM and system-resistance sensitivity analysis | Deterministic prototype committed and CI-verified; full acceptance remains in progress | M1; M2 for probabilistic comparisons |
 | M4 | Evidence-based thermal model progression | Planned | M2; physical thermal measurements |
 | M5 | Recover or develop revision-specific CAD and CFD assets | Separate workstream | Verified physical geometry and provenance |
 

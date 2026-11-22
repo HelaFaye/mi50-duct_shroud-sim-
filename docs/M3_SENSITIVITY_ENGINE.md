@@ -1,6 +1,6 @@
 # M3 deterministic operating-point sensitivity engine
 
-_Status: initial implementation committed as `5919163` and CI-verified. Follow-up scenario-failure-isolation hardening passes 87/87 local tests and awaits its own commit and CI run._
+_Status: the deterministic scenario-sweep prototype and scenario-failure-isolation hardening are committed and CI-verified in `ede1e38` (87/87 local tests; CI run `45012233377` passed Python 3.10, 3.12, and 3.14). Physical input-data validation and full M3 acceptance remain open._
 
 ## Purpose and scope
 
@@ -71,5 +71,5 @@ Omit `--rpm-scaling-mode affinity-law` and use only `--rpms 4300` to hold fan sp
 
 - Synthetic tests cover affinity scaling, explicit opt-in, baseline requirements, fan-count and resistance trends, tabulated-curve pressure scaling, deterministic output, and baseline comparisons.
 - Initial commit `5919163` passed 85/85 local tests and GitHub Actions run [45011421134](https://github.com/HelaFaye/mi50-duct_shroud-sim-/actions/runs/45011421134) on Python 3.10, 3.12, and 3.14.
-- Follow-up scenario-failure isolation adds two regression tests. The resulting 87-test suite passes locally on Python 3.14.7; the follow-up still requires CI verification.
+- Follow-up commit [`ede1e38`](https://github.com/HelaFaye/mi50-duct_shroud-sim-/commit/ede1e38a70d1d0df93dcb663b57120f9b530a183) adds scenario-failure isolation and two regression tests. All 87 tests pass locally on Python 3.14.7; [GitHub Actions run 45012233377](https://github.com/HelaFaye/mi50-duct_shroud-sim-/actions/runs/45012233377) passed on Python 3.10, 3.12, and 3.14.
 - Software tests establish implementation behavior only. They do not validate the P9 digitization, the affinity-law similarity assumption, the hypothetical resistance reference, or installed MI50 performance.
