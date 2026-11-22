@@ -1,0 +1,194 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:mi50:curve-uncertainty:v1",
+  "title": "MI50 curve uncertainty sidecar v1",
+  "description": "Structural schema for the MI50 fan/system curve uncertainty sidecar. Cross-field, row-count, CSV-hash, anchor, unit, and cross-sidecar checks are enforced by analysis.operating_point_uncertainty.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "curve_type", "central_values", "provenance",
+    "measurement_basis", "operating_condition", "distinct_source_ids_independent",
+    "known_dependencies", "coordinate_coverage", "uncertainty_sources"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "curve_type": {"enum": ["fan", "system"]},
+    "central_values": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["classification", "description", "source_record"],
+      "properties": {
+        "classification": {
+          "enum": [
+            "manufacturer_numeric_data", "calibrated_measurement",
+            "approximate_manual_digitization", "estimate",
+            "synthetic_test_fixture", "hypothetical_screening_input"
+          ]
+        },
+        "description": {"type": "string", "minLength": 1},
+        "source_record": {"type": "string", "minLength": 1}
+      }
+    },
+    "measurement_basis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "flow_basis", "flow_reference_conditions", "pressure_basis",
+        "pressure_reference", "velocity_pressure_correction"
+      ],
+      "properties": {
+        "flow_basis": {"enum": ["actual_volumetric_flow", "standard_volumetric_flow"]},
+        "flow_reference_conditions": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["temperature_c", "absolute_pressure_kpa", "relative_humidity_percent"],
+          "properties": {
+            "temperature_c": {"type": "number"},
+            "absolute_pressure_kpa": {"type": "number", "exclusiveMinimum": 0},
+            "relative_humidity_percent": {"type": "number", "minimum": 0, "maximum": 100}
+          }
+        },
+        "pressure_basis": {"const": "static_pressure"},
+        "pressure_reference": {"type": "string", "minLength": 1},
+        "velocity_pressure_correction": {"type": "string", "minLength": 1}
+      }
+    },
+    "operating_condition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["configuration_id", "fan_model", "fan_count", "rpm", "voltage_v", "pwm_percent"],
+      "properties": {
+        "configuration_id": {"type": "string", "minLength": 1},
+        "fan_model": {"type": "string", "minLength": 1},
+        "fan_count": {"type": "integer", "minimum": 1},
+        "rpm": {"type": "number", "exclusiveMinimum": 0},
+        "voltage_v": {"type": "number", "exclusiveMinimum": 0},
+        "pwm_percent": {"type": "number", "minimum": 0, "maximum": 100}
+      }
+    },
+    "distinct_source_ids_independent": {"const": true},
+    "known_dependencies": {"type": "array", "maxItems": 0},
+    "coordinate_coverage": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["row_index", "flow_cfm", "static_pressure_mmh2o"],
+        "properties": {
+          "row_index": {"type": "integer", "minimum": 1},
+          "flow_cfm": {"enum": ["sampled", "fixed_by_definition", "held_fixed_assumption"]},
+          "static_pressure_mmh2o": {"enum": ["sampled", "fixed_by_definition", "held_fixed_assumption"]},
+          "held_fixed_reasons": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "flow_cfm": {"type": "string", "minLength": 1},
+              "static_pressure_mmh2o": {"type": "string", "minLength": 1}
+            }
+          }
+        }
+      }
+    },
+    "uncertainty_sources": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/source"}
+    }
+  },
+  "$defs": {
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "evaluation_method", "source_record", "original_statement", "conversion_notes", "units", "distribution", "targets"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1, "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"},
+        "evaluation_method": {"enum": ["type_a", "type_b", "other"]},
+        "source_record": {"type": "string", "minLength": 1},
+        "original_statement": {"type": "string", "minLength": 1},
+        "conversion_notes": {"type": "string", "minLength": 1},
+        "units": {"enum": ["CFM", "mmH2O", "dimensionless"]},
+        "distribution": {
+          "oneOf": [
+            {
+              "type": "object", "additionalProperties": false,
+              "required": ["family", "parameters"],
+              "properties": {
+                "family": {"const": "normal"},
+                "parameters": {
+                  "type": "object", "additionalProperties": false,
+                  "required": ["mean", "standard_deviation"],
+                  "properties": {"mean": {"const": 0}, "standard_deviation": {"type": "number", "exclusiveMinimum": 0}}
+                }
+              }
+            },
+            {
+              "type": "object", "additionalProperties": false,
+              "required": ["family", "parameters"],
+              "properties": {
+                "family": {"const": "student_t"},
+                "parameters": {
+                  "type": "object", "additionalProperties": false,
+                  "required": ["location", "scale", "degrees_of_freedom"],
+                  "properties": {"location": {"const": 0}, "scale": {"type": "number", "exclusiveMinimum": 0}, "degrees_of_freedom": {"type": "number", "exclusiveMinimum": 2}}
+                }
+              }
+            },
+            {
+              "type": "object", "additionalProperties": false,
+              "required": ["family", "parameters"],
+              "properties": {
+                "family": {"const": "uniform"},
+                "parameters": {
+                  "type": "object", "additionalProperties": false,
+                  "required": ["lower", "upper"],
+                  "properties": {"lower": {"type": "number"}, "upper": {"type": "number"}}
+                }
+              }
+            },
+            {
+              "type": "object", "additionalProperties": false,
+              "required": ["family", "parameters"],
+              "properties": {
+                "family": {"const": "triangular"},
+                "parameters": {
+                  "type": "object", "additionalProperties": false,
+                  "required": ["lower", "mode", "upper"],
+                  "properties": {"lower": {"type": "number"}, "mode": {"type": "number"}, "upper": {"type": "number"}}
+                }
+              }
+            }
+          ]
+        },
+        "targets": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["rows", "quantity", "effect", "coefficient"],
+            "properties": {
+              "rows": {
+                "oneOf": [
+                  {"const": "all"},
+                  {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "integer", "minimum": 1}}
+                ]
+              },
+              "quantity": {"enum": ["flow_cfm", "static_pressure_mmh2o"]},
+              "effect": {"enum": ["additive", "relative_scale"]},
+              "coefficient": {"type": "number"}
+            }
+          }
+        }
+      }
+    }
+  }
+}

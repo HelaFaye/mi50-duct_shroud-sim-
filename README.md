@@ -26,25 +26,27 @@ The engineering roadmap, milestone acceptance criteria, branching policy, and cu
 
 - [`docs/DEVELOPMENT_PLAN.md`](docs/DEVELOPMENT_PLAN.md) — milestone plan and engineering gates.
 - [`docs/PROGRESS.md`](docs/PROGRESS.md) — current baseline, completed work, active milestone, and dated progress log.
-- [`docs/UNCERTAINTY_MODEL_SPEC.md`](docs/UNCERTAINTY_MODEL_SPEC.md) — M1 uncertainty-data and propagation design draft; review required before stochastic implementation.
+- [`docs/UNCERTAINTY_MODEL_SPEC.md`](docs/UNCERTAINTY_MODEL_SPEC.md) — accepted M1 v1.0 uncertainty-data and propagation contract.
+- [`docs/M2_UNCERTAINTY_ENGINE.md`](docs/M2_UNCERTAINTY_ENGINE.md) — M2 v1 uncertainty-engine operation, report semantics, and limitations.
+- [`schemas/curve-uncertainty-v1.schema.json`](schemas/curve-uncertainty-v1.schema.json) — structural schema for curve uncertainty sidecars.
 
 Keep `main` as the validated integration baseline. Perform ongoing engineering work on focused `wip/<topic>` branches and merge through pull requests after local validation and CI pass. Update the progress log when a milestone changes state or an engineering decision changes.
 
 ## Run the tests
 
-The project currently uses Python's standard library for its analysis and tests; no third-party Python packages are required for the checked-in test suite.
+The project uses Python's standard library for its analysis and tests; no third-party Python packages are required by the checked-in test suite.
 
 ```bash
 python3 -m unittest discover -s tests -v
 ```
 
-The current suite contains 21 tests: 17 fan/system operating-point tests and 4 photogrammetry scale-fit tests. GitHub Actions runs the suite on Python 3.10, 3.12, and 3.14 for pushes and pull requests.
+The original baseline suite contains 21 tests: 17 fan/system operating-point tests and 4 photogrammetry scale-fit tests. The M2 v1 overlay adds 30 synthetic uncertainty-engine tests. After overlay integration, run the complete combined suite; GitHub Actions runs it on Python 3.10, 3.12, and 3.14 for pushes and pull requests.
 
 ## Fan/system operating-point solver
 
 `analysis/fan_operating_point.py` finds the intersection of a single-fan pressure/flow curve and a system pressure-drop curve. It supports identical fans in parallel, piecewise-linear interpolation, and bisection without extrapolating outside the supplied curve ranges.
 
-Two system models are supported:
+Two system models are supported by the deterministic solver:
 
 1. **Quadratic screening approximation:** `Δp = K Q²`, with `K` fitted from one user-supplied pressure/flow reference point.
 2. **Tabulated system curve:** measured or otherwise justified total-flow/pressure-drop pairs supplied as CSV. This is the preferred mode once physical measurements exist.
@@ -86,6 +88,14 @@ python3 analysis/fan_operating_point.py \
 The CSV columns are `flow_cfm,static_pressure_mmh2o`. The template is intentionally header-only. Do not enter the hypothetical 2 mmH₂O at 50 CFM point and label it as measured data. The solver rejects insufficient system-curve range rather than extrapolating.
 
 The model assumes identical fans with equal flow sharing, a steady-state fan curve at one speed, and a consistent static-pressure convention between fan and system data. Series fans, unequal fan sharing, PWM control, transients, flow maldistribution, leakage, and recirculation are not modelled.
+
+## M2 v1 uncertainty propagation
+
+`analysis/operating_point_uncertainty.py` is a separate, opt-in path for Monte Carlo propagation through **tabulated** fan and system curves. It does not modify the deterministic solver or its CLI. It requires one SHA-256-bound v1 JSON sidecar per curve, explicit fan/configuration operating conditions, an RNG seed, and an attempted-trial count.
+
+The sidecars identify uncertainty for every coordinate, shared source effects, and the original uncertainty statement/conversion notes. The engine rejects unsupported dependencies, invalid sampled curves, and out-of-range roots without repairing curves or retrying invisibly. Reports include trial failures, marginal empirical intervals, and joint output covariance/correlation.
+
+See [`docs/M2_UNCERTAINTY_ENGINE.md`](docs/M2_UNCERTAINTY_ENGINE.md) for the invocation and report contract. The current repository still has no quantified uncertainty for the approximate P9 chart digitization and no measured MI50 system curve. **Do not create real-data sidecars by guessing; no real MI50 probabilistic result can be produced from the current inputs.** Synthetic uncertainty fixtures in the tests are for software verification only.
 
 ## Thermal interpretation
 
