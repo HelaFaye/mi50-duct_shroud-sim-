@@ -8,9 +8,9 @@ _Last updated: 2026-11-21_
 - Stable branch: `main`
 - Stable baseline commit: `eca4f4493e4df18843932a3e755299645ef1822f`
 - Active engineering branch: `wip/uncertainty-aware-operating-point`
-- Current confirmed remote WIP HEAD: `f7f3b1fab65493cfc885befff4bee7c2dfe70a58`
+- Latest verified M2 implementation commit: `0f8e86976c7053c84b72bf3a4dfdcdf408f52e28`
 - M1: **v1.0 accepted** on 2026-11-21 by instruction to proceed with the v0.2 recommendations without amendments.
-- M2: **v1 prototype committed, locally validated, and CI-verified; implementation remains in progress.**
+- M2: **v1.1 DKW quantile-precision refinement committed, locally validated, and CI-verified; the overall M2 milestone remains in progress.**
 
 ## Verified baseline
 
@@ -63,11 +63,22 @@ The committed M2 prototype provides:
 - physical-curve rejection sampling and fixed attempted-trial/failure accounting;
 - no extrapolation and no silent curve repair;
 - marginal output intervals plus joint covariance/correlation reporting;
-- 30 synthetic engine tests, integrated into the 51-test suite.
+- 35 uncertainty-engine tests (30 M2 v1 + 5 M2 v1.1), integrated into the 56-test repository suite.
 
-`--minimum-valid-fraction` is optional and has no hidden default. Without it, the report exposes the valid fraction but does not apply a yield threshold; a run with at least two valid roots can still be marked `conditional_result` even when the valid fraction is small. For runs where yield is an acceptance criterion, supply an explicit threshold and inspect `minimum_valid_fraction_met`. At least two valid roots are required for sample standard uncertainties and covariance; that mathematical minimum is not a guarantee that empirical tail quantiles are statistically stable.
+`--minimum-valid-fraction` is optional and has no hidden default. Without it, the report exposes the valid fraction but does not apply a yield threshold; a run with at least two valid roots can still be marked `conditional_result` even when the valid fraction is small. For runs where yield is an acceptance criterion, supply an explicit threshold and inspect `minimum_valid_fraction_met`. At least two valid roots are required for sample standard uncertainties and covariance; that mathematical minimum is not a guarantee that empirical tail quantiles are statistically stable. M2 v1.1 adds distribution-free DKW confidence bounds for finite-Monte-Carlo quantile precision, with 95% default familywise confidence across the four marginal outputs. These bounds use accepted valid-root vectors, are distinct from predictive coverage intervals, and do not impose an automatic sample-size acceptance threshold.
 
-Do not create sidecars with invented uncertainty values or use the engine to claim real MI50 performance. Before real-data use, the fan and system curves need compatible measurement definitions and defensible quantified uncertainty sources. Further M2 code review should consider whether minimum valid sample counts or Monte Carlo quantile-precision diagnostics are needed for the intended reporting use.
+Do not create sidecars with invented uncertainty values or use the engine to claim real MI50 performance. Before real-data use, the fan and system curves need compatible measurement definitions and defensible quantified uncertainty sources. The DKW diagnostic addresses finite Monte Carlo sampling error only; it does not validate the input PDFs, quantify measurement uncertainty, or establish physical performance.
+
+### M2 v1.1 — DKW Monte Carlo quantile precision verified
+
+- Implementation commit: [`0f8e86976c7053c84b72bf3a4dfdcdf408f52e28`](https://github.com/HelaFaye/mi50-duct_shroud-sim-/commit/0f8e86976c7053c84b72bf3a4dfdcdf408f52e28).
+- Report format incremented to 1.1; each output now includes DKW order-statistic confidence bounds for both central empirical coverage endpoints.
+- The default 95% quantile-precision confidence is familywise across all four marginal outputs, using a Bonferroni-adjusted DKW band that is simultaneous over quantile probabilities within each marginal.
+- Conservative order-statistic inversion uses Decimal rank arithmetic and explicitly reports unbounded tail limits as JSON `null` with unbounded flags.
+- Local verification: `compileall` passed, `git diff --check` passed, and all 56 tests passed (21 original + 30 M2 v1 + 5 M2 v1.1).
+- GitHub Actions [run 44999641433](https://github.com/HelaFaye/mi50-duct_shroud-sim-/actions/runs/44999641433) passed compilation and the full unittest step on Python 3.10, 3.12, and 3.14.
+- The v1.1 commit did not modify the deterministic solver, accepted M1 specification, or v1 sidecar schema.
+- M2 remains in progress pending broader implementation review and eventual evidence-based input data; software tests do not constitute physical validation.
 
 ## Progress log
 
@@ -81,6 +92,7 @@ Do not create sidecars with invented uncertainty values or use the engine to cla
 | 2026-11-21 | Published and refined M1 uncertainty specification | Review commit `3c300ee02a2fbb7da8ae05094239ec1e7dea341f`; CI run `44976693486` passed |
 | 2026-11-21 | Accepted M1 v1.0 recommendations | Owner instruction: proceed with the v0.2 recommendations without amendments |
 | 2026-11-21 | Added M2 v1 tabulated-curve uncertainty prototype | Commit `f7f3b1fab65493cfc885befff4bee7c2dfe70a58`; 51 local tests passed; CI run `44986689330` passed all three Python versions |
+| 2026-11-21 | Added M2 v1.1 DKW Monte Carlo quantile-precision reporting | Commit [`0f8e869`](https://github.com/HelaFaye/mi50-duct_shroud-sim-/commit/0f8e86976c7053c84b72bf3a4dfdcdf408f52e28); 56/56 local tests passed; [CI run 44999641433](https://github.com/HelaFaye/mi50-duct_shroud-sim-/actions/runs/44999641433) passed compilation and unit tests on Python 3.10, 3.12, and 3.14 |
 
 ## Update protocol
 
