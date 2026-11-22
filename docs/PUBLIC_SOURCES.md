@@ -124,7 +124,7 @@ All maximum airflow values below are free-air endpoints; maximum static-pressure
 - Documentation page: <https://support.arctic.de/en/p9-max/docs>
 - P–Q PDF: <https://support.arctic.de/products/p9-max/techdocs/PQ%20Curve%2C%20P9%20Max%20%282025-01-17%29.pdf>
 - CFD spreadsheet: <https://support.arctic.de/products/p9-max/techdocs/P9%20Max%20-%20PQ%20Curve%20for%20CFD.xlsx>
-- Specs: 92 × 92 × 25 mm; 450–4300 RPM; 58.25 CFM; 6.17 mmH₂O. The P–Q curve gives intermediate points; at 4300 RPM it is approximately 6.1 mmH₂O at 0 CFM, 5.7 at 10, 4.3 at 20, 3.0 at 30, 2.4 at 40, 1.2 at 50, and 0 around 59–60 CFM. No dBA value was found in the cited specification sheet. Product documentation also provides a 92 mm mounting-hole drawing.
+- Specs: 92 × 92 × 25 mm; 450–4300 RPM; 58.25 CFM; 6.17 mmH₂O. The official CFD workbook provides a ten-point numerical table for the 4300 RPM curve; its extracted data and limitations are documented in [`ARCTIC_P9_MAX_CURVE_PROVENANCE.md`](ARCTIC_P9_MAX_CURVE_PROVENANCE.md). The workbook's `C=0.95` flow-column notation remains unresolved. No dBA value was found in the cited specification sheet. Product documentation also provides a 92 mm mounting-hole drawing.
 
 ### ARCTIC — 120 mm P12 Max
 

@@ -76,7 +76,7 @@ Acceptance tests include zero-uncertainty recovery, source sharing, seeded repro
 - Support the existing quadratic screening reference and uniform pressure scaling of a supplied tabulated system curve; preserve the solver's no-extrapolation behavior and retain failed scenarios.
 - Compare every solved scenario with the reference-RPM, baseline-fan-count, resistance-multiplier-1.0 case.
 - Do not infer electrical input from RPM. Keep fan speed, motor/electrical input, and system-resistance changes distinct.
-- The current P9 curve is approximate manual digitization and the MI50 system-curve template is empty. Outputs using the current quadratic reference are hypothetical screening scenarios, not measured MI50 performance. Probabilistic sweeps remain deferred until M2 is accepted for that use.
+- The canonical P9 curve is the ten-point manufacturer-workbook extraction, with unresolved `C=0.95` flow notation and no published pointwise uncertainty; the manual digitization remains a comparison artifact. The MI50 system-curve template is empty. Outputs using the quadratic reference are hypothetical screening scenarios, not measured MI50 performance. Probabilistic sweeps remain deferred until M2 is accepted for that use.
 
 ### M4 — Evidence-based thermal model progression
 

@@ -23,7 +23,7 @@ sees the common pressure rise, and the system curve is evaluated at total flow.
 
 ```bash
 python3 analysis/fan_operating_point.py \
-  --curve data/fan_curves/arctic_p9_max_4300rpm_digitized.csv \
+  --curve data/fan_curves/arctic_p9_max_4300rpm_manufacturer_cfd.csv \
   --fan-count 2 \
   --system-pressure-mmh2o 2.0 \
   --system-reference-flow-cfm 50 \
@@ -37,7 +37,7 @@ measured MI50 heatsink resistance.
 
 ```bash
 python3 analysis/fan_operating_point.py \
-  --curve data/fan_curves/arctic_p9_max_4300rpm_digitized.csv \
+  --curve data/fan_curves/arctic_p9_max_4300rpm_manufacturer_cfd.csv \
   --system-curve data/system_curves/mi50_system_curve_template.csv \
   --fan-count 2 \
   --heat-load-w 300
@@ -64,12 +64,15 @@ drop. The solver refuses extrapolation beyond either curve. If the measured
 system curve ends before the fan/system intersection, collect more high-flow
 points rather than extrapolating.
 
-The fan curve at
-`data/fan_curves/arctic_p9_max_4300rpm_digitized.csv` is an approximate manual
-digitization of ARCTIC's official P9 Max 4300 RPM P–Q chart. Its intermediate
-points are not manufacturer numerical data. The chart and specification links
-are listed in `data/fan_curves/README.md`; replace the digitization with the
-manufacturer numeric data or a measured fan curve when available.
+The preferred fan curve at
+`data/fan_curves/arctic_p9_max_4300rpm_manufacturer_cfd.csv` contains ten numerical
+points extracted from ARCTIC's official P9 Max 4300 RPM CFD workbook. It is the
+preferred, more traceable source, but it is not higher-resolution than the
+retained 19-point manual digitization and has no published pointwise uncertainty.
+The flow-column notation `C=0.95` remains unresolved; no additional correction
+is applied. See `docs/ARCTIC_P9_MAX_CURVE_PROVENANCE.md` for source hashes,
+extraction, and limitations. The original digitized CSV remains unchanged for
+historical comparison.
 
 ## Measurement protocol for an MI50 system curve
 

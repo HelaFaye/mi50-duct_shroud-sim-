@@ -1,6 +1,6 @@
 # M3 deterministic operating-point sensitivity engine
 
-_Status: the deterministic scenario-sweep prototype and scenario-failure-isolation hardening are committed and CI-verified in `ede1e38` (87/87 local tests; CI run `45012233377` passed Python 3.10, 3.12, and 3.14). Physical input-data validation and full M3 acceptance remain open._
+_Status: the deterministic scenario-sweep prototype and scenario-failure-isolation hardening are committed and CI-verified in `ede1e38` (87/87 local tests; CI run `45012233377` passed Python 3.10, 3.12, and 3.14). Manufacturer fan-input provenance is now improved and regression-pinned; physical system-input validation and full M3 acceptance remain open._
 
 ## Purpose and scope
 
@@ -15,7 +15,9 @@ The first increment is a scenario tool, not an uncertainty engine. It reports ea
 - The baseline fan count must be included in the fan-count list. The RPM list must include the reference RPM, and the resistance list must include `1.0`.
 - Either a tabulated system curve or both a quadratic screening reference pressure and reference flow.
 
-For the currently available repository data, the P9 Max curve is an approximate manual digitization at 4300 RPM. The MI50 system-curve template is header-only. Therefore, no measured MI50 system-curve sweep is currently possible. A quadratic reference such as 2.0 mmH2O at 50 CFM is a hypothetical screening input, not measured MI50 resistance.
+The preferred repository P9 Max input is the ten-point manufacturer-workbook-derived curve at 4300 RPM, `data/fan_curves/arctic_p9_max_4300rpm_manufacturer_cfd.csv`. The 19-point manual chart digitization remains available separately for historical comparison. The source identity, extraction, SHA-256 values, comparison statistics, and unresolved `C=0.95` flow-column notation are documented in [`ARCTIC_P9_MAX_CURVE_PROVENANCE.md`](ARCTIC_P9_MAX_CURVE_PROVENANCE.md). The manufacturer table is more traceable, but it is not higher resolution and provides no pointwise uncertainty. The MI50 system-curve template remains header-only.
+
+A quadratic reference such as 2.0 mmH2O at 50 CFM is a hypothetical screening input, not measured MI50 resistance. No measured MI50 system-curve sweep is currently possible.
 
 ## RPM treatment
 
@@ -27,7 +29,7 @@ The affinity-law mode derives a target-speed curve from the reference curve usin
 Q_2/Q_1=N_2/N_1, \qquad \Delta p_2/\Delta p_1=(N_2/N_1)^2.
 \]
 
-Every derived scenario is labeled `affinity_law_derived`. The report records the speed ratio and assumptions. This is not a measured multi-speed fan curve or a guarantee of dynamic similarity. The applicability review must include geometric, kinematic, and dynamic similarity, density/compressibility, Reynolds number, and tip-speed Mach number. Using the same fan at another RPM does not by itself establish dynamic similarity. The reference P9 digitization remains approximate, so scaled results inherit its data-quality limitations. See [ANSI/AMCA 99-25, *Standards Handbook*, section 4](https://www.amca.org/assets/resources/public/resources/ansi-amca-99-25-standards-handbook.pdf), for fan-law similarity requirements.
+Every derived scenario is labeled `affinity_law_derived`. The report records the speed ratio and assumptions. This is not a measured multi-speed fan curve or a guarantee of dynamic similarity. The applicability review must include geometric, kinematic, and dynamic similarity, density/compressibility, Reynolds number, and tip-speed Mach number. Using the same fan at another RPM does not by itself establish dynamic similarity. Manufacturer workbook provenance improves the reference data traceability but does not resolve these affinity-law applicability conditions. See [ANSI/AMCA 99-25, *Standards Handbook*, section 4](https://www.amca.org/assets/resources/public/resources/ansi-amca-99-25-standards-handbook.pdf), for fan-law similarity requirements.
 
 No electrical input power is calculated. The cubic speed relationship is not applied because measured electrical or shaft-power data and a motor/fan efficiency model are absent. RPM, electrical input, and system resistance remain separate quantities.
 
@@ -42,7 +44,7 @@ The tabulated curve still uses the deterministic solver's no-extrapolation behav
 
 The baseline is the scenario at reference RPM, the declared baseline fan count, and resistance multiplier `1.0`. The tool refuses to produce relative comparisons if that baseline does not solve.
 
-Every solved row reports total flow, per-fan flow, fan/system pressure, and ideal bulk-air temperature rise, plus absolute and relative differences from baseline. A zero baseline output has an undefined relative percentage, serialized as `null`. Failed rows retain the solver error and a categorized reason. The JSON report includes the input curve hash, solver source hash, RPM transformation assumptions, fixed thermal inputs, and scenario/failure counts.
+Every solved row reports total flow, per-fan flow, fan/system pressure, and ideal bulk-air temperature rise, plus absolute and relative differences from baseline. A zero baseline output has an undefined relative percentage, serialized as `null`. Failed rows retain the solver error and a categorized reason. The JSON report includes the input curve hash, solver source hash, RPM transformation assumptions, fixed thermal inputs, and scenario/failure counts. Set `--fan-curve-provenance` to a descriptive source label; this field is free-form metadata and does not independently validate the source.
 
 The temperature output remains an ideal bulk-air energy balance; it is not a GPU junction, HBM, VRM, or heatsink temperature prediction. Parallel fans are assumed identical and equally loaded. Fan interaction, motor electrical input, transients, and temperature-dependent fan behavior are not modeled.
 
@@ -51,17 +53,17 @@ The temperature output remains an ideal bulk-air energy balance; it is not a GPU
 The following is an illustrative screening run only. It deliberately uses a hypothetical quadratic system reference; do not treat the results as measured MI50 performance.
 
 ```bash
-python3 -m analysis.operating_point_sensitivity \
-  --fan-curve data/fan_curves/arctic_p9_max_4300rpm_digitized.csv \
-  --reference-rpm 4300 \
-  --rpms 4300,4000,3600 \
-  --rpm-scaling-mode affinity-law \
-  --fan-counts 1,2,3 \
-  --baseline-fan-count 2 \
-  --system-resistance-multipliers 0.5,0.75,1.0,1.5,2.0 \
-  --system-pressure-mmh2o 2.0 \
-  --system-reference-flow-cfm 50 \
-  --fan-curve-provenance approximate_manual_digitization \
+python3 -m analysis.operating_point_sensitivity \\
+  --fan-curve data/fan_curves/arctic_p9_max_4300rpm_manufacturer_cfd.csv \\
+  --reference-rpm 4300 \\
+  --rpms 4300,4000,3600 \\
+  --rpm-scaling-mode affinity-law \\
+  --fan-counts 1,2,3 \\
+  --baseline-fan-count 2 \\
+  --system-resistance-multipliers 0.5,0.75,1.0,1.5,2.0 \\
+  --system-pressure-mmh2o 2.0 \\
+  --system-reference-flow-cfm 50 \\
+  --fan-curve-provenance manufacturer_cfd_workbook_extracted \\
   --output results/m3_sensitivity_screening.json
 ```
 
@@ -70,6 +72,8 @@ Omit `--rpm-scaling-mode affinity-law` and use only `--rpms 4300` to hold fan sp
 ## Verification gates
 
 - Synthetic tests cover affinity scaling, explicit opt-in, baseline requirements, fan-count and resistance trends, tabulated-curve pressure scaling, deterministic output, and baseline comparisons.
+- The canonical manufacturer CSV is regression-tested by its SHA-256, point count, and endpoints. Workbook re-extraction is independently guarded by the extractor's source and output hashes.
+- A paired comparison of the manufacturer and historical digitized curves completed all 45 scenarios with both inputs. Maximum relative output differences were below 1.51%; this is a source-substitution comparison, not a physical accuracy or uncertainty assessment. Full baseline and scenario details are recorded in [the P9 provenance report](ARCTIC_P9_MAX_CURVE_PROVENANCE.md).
 - Initial commit `5919163` passed 85/85 local tests and GitHub Actions run [45011421134](https://github.com/HelaFaye/mi50-duct_shroud-sim-/actions/runs/45011421134) on Python 3.10, 3.12, and 3.14.
 - Follow-up commit [`ede1e38`](https://github.com/HelaFaye/mi50-duct_shroud-sim-/commit/ede1e38a70d1d0df93dcb663b57120f9b530a183) adds scenario-failure isolation and two regression tests. All 87 tests pass locally on Python 3.14.7; [GitHub Actions run 45012233377](https://github.com/HelaFaye/mi50-duct_shroud-sim-/actions/runs/45012233377) passed on Python 3.10, 3.12, and 3.14.
-- Software tests establish implementation behavior only. They do not validate the P9 digitization, the affinity-law similarity assumption, the hypothetical resistance reference, or installed MI50 performance.
+- Software tests establish implementation and data-integrity behavior only. They do not resolve `C=0.95`, establish pointwise measurement uncertainty, validate affinity-law similarity, validate the hypothetical resistance reference, or establish installed MI50 performance.

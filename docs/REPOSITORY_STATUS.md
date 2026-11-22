@@ -17,7 +17,7 @@ The file inventory was enumerated from the working tree and compared with the pu
 | Area | Checked-in files | Status |
 |---|---|---|
 | Fan/system operating point | `analysis/fan_operating_point.py`, `tests/test_fan_operating_point.py` | Implemented; 17 tests |
-| Fan data | `data/fan_curves/arctic_p9_max_4300rpm_digitized.csv`, `data/fan_curves/README.md` | Approximate manual P–Q chart digitization |
+| Fan data | manufacturer-workbook-derived `arctic_p9_max_4300rpm_manufacturer_cfd.csv`; historical `arctic_p9_max_4300rpm_digitized.csv`; `data/fan_curves/README.md` | Ten-point manufacturer numerical table; provenance and unresolved `C=0.95` notation documented |
 | System curve | `data/system_curves/mi50_system_curve_template.csv` | Header-only template; no measured MI50 data |
 | Photogrammetry scale fitting | `scripts/photogrammetry_scale_fit.py`, `tests/test_photogrammetry_scale_fit.py` | Implemented; 4 tests |
 | Mechanical identity / provenance | `data/mi50_envelope.json`, `mi50_envelope.json`, `MI50_PUBLIC_REFERENCE_MODELS.md`, `PUBLIC_SOURCES.md`, `docs/` | Documentation/data present; verify against each physical specimen |
@@ -60,7 +60,7 @@ git diff --check
 ## Engineering boundaries
 
 - The 2 mmH₂O at 50 CFM quadratic reference is a hypothetical screening input, not measured MI50 resistance.
-- The fan curve's intermediate points are manually digitized; treat them as approximate.
+- The canonical P9 Max curve is extracted from the manufacturer CFD workbook; it has ten points, unresolved `C=0.95` flow notation, and no published pointwise uncertainty. The manual digitization is retained separately for comparison.
 - The system-curve CSV is a template, not a measurement dataset.
 - The ideal bulk-air temperature rise is not a GPU junction/HBM/VRM temperature prediction.
 - The current fan model assumes identical parallel fans with equal flow sharing and one fixed-speed steady-state fan curve.

@@ -46,8 +46,8 @@ _Last updated: 2026-11-22_
 
 - `data/system_curves/mi50_system_curve_template.csv` is header-only. No measured MI50 system curve is available.
 - The `2.0 mmH2O at 50 CFM` quadratic reference remains a hypothetical screening input and is not supported by M2 v1, which requires tabulated curves.
-- The ARCTIC P9 Max 4300 RPM P–Q data are approximate manual chart digitization, not manufacturer numerical data or a measured fan curve. There are no defensible quantified digitization uncertainties in the repository.
-- The previous 60.52 CFM / 2.930 mmH2O operating point is conditional on the hypothetical system reference and digitized fan curve; it is not an installed MI50 performance measurement.
+- The canonical ARCTIC P9 Max 4300 RPM curve is a ten-point numerical table extracted from the manufacturer CFD workbook. It is not an in-house measurement and has no published pointwise uncertainty. The prior 19-point manual digitization remains unchanged for comparison; workbook flow notation `C=0.95` is unresolved and no additional factor is applied.
+- The previous 60.52 CFM / 2.930 mmH2O operating point is a historical result conditional on the hypothetical system reference and the then-used digitized fan curve; it is not an installed MI50 performance measurement and must not be attributed to the new manufacturer-workbook curve.
 - The previous 8.67 °C value is ideal bulk-air temperature rise at assumed 300 W and calculated airflow, not GPU junction, HBM, VRM, or heatsink temperature.
 - No real MI50 probabilistic result is supported by the current inputs. Synthetic test fixtures are software verification only.
 
@@ -89,7 +89,7 @@ Do not create sidecars with invented uncertainty values or use the engine to cla
 - GitHub Actions run [45011421134](https://github.com/HelaFaye/mi50-duct_shroud-sim-/actions/runs/45011421134): Python 3.10, 3.12, and 3.14 all passed.
 - Follow-up hardening in commit [`ede1e38`](https://github.com/HelaFaye/mi50-duct_shroud-sim-/commit/ede1e38a70d1d0df93dcb663b57120f9b530a183) retains invalid per-scenario fan and tabulated-system curve transformations as categorized failed rows instead of aborting otherwise valid scenarios. The full suite passes 87/87 locally on Python 3.14.7; [CI run 45012233377](https://github.com/HelaFaye/mi50-duct_shroud-sim-/actions/runs/45012233377) passed all three Python versions.
 - Affinity-law scaling remains explicit opt-in. Geometric, kinematic, and dynamic similarity, density/compressibility, Reynolds number, and tip-speed Mach number are applicability checks.
-- The P9 Max CSV remains approximate manual digitization. ARCTIC's official documentation lists a separate `P9 Max - PQ Curve for CFD` workbook, but its contents and equivalence to the chart conditions have not yet been inspected or validated.
+- The canonical P9 Max CSV is now extracted from the inspected ARCTIC `P9 Max - PQ Curve for CFD` workbook. Its source and output hashes, extraction, comparison with the old digitization, and unresolved `C=0.95` notation are recorded in `docs/ARCTIC_P9_MAX_CURVE_PROVENANCE.md`; equivalence of every workbook condition to the plotted PDF curve is not assumed.
 - No measured MI50 system curve or physical MI50 performance validation is available. Quadratic reference scenarios remain hypothetical screening only.
 
 ## Progress log
@@ -106,6 +106,8 @@ Do not create sidecars with invented uncertainty values or use the engine to cla
 | 2026-11-21 | Added M2 v1 tabulated-curve uncertainty prototype | Commit `f7f3b1fab65493cfc885befff4bee7c2dfe70a58`; 51 local tests passed; CI run `44986689330` passed all three Python versions |
 | 2026-11-21 | Added M2 v1.1 DKW Monte Carlo quantile-precision reporting | Commit [`0f8e869`](https://github.com/HelaFaye/mi50-duct_shroud-sim-/commit/0f8e86976c7053c84b72bf3a4dfdcdf408f52e28); 56/56 local tests passed; [CI run 44999641433](https://github.com/HelaFaye/mi50-duct_shroud-sim-/actions/runs/44999641433) passed compilation and unit tests on Python 3.10, 3.12, and 3.14 |
 | 2026-11-22 | Added M3 deterministic sensitivity prototype | Commit [`5919163`](https://github.com/HelaFaye/mi50-duct_shroud-sim-/commit/5919163e348cb757293b92dd0d82eba5dd46c80d); initial 85/85 tests passed locally; [CI run 45011421134](https://github.com/HelaFaye/mi50-duct_shroud-sim-/actions/runs/45011421134) passed all three Python versions |
+| 2026-11-22 | Inspected and extracted ARCTIC P9 Max manufacturer CFD workbook table | 10 positive-pressure points; workbook SHA-256 `0d323c1ddc730919366df477a298f9d0cdbcee88d0a70e00674a47697d2d8854`; canonical CSV SHA-256 `d1c9123afa5bc3c95226cea0a57b58dc4bdc2a63d20e279fea4b5d09d15ae922`; existing solver load passed; `C=0.95` remains unresolved |
+| 2026-11-22 | Compared manufacturer and historical P9 curves across the same 45 M3 scenarios | Both datasets solved 45/45 scenarios with the same solver source; maximum relative output difference was 1.50884%. Detailed baseline and scenario results are in [`ARCTIC_P9_MAX_CURVE_PROVENANCE.md`](ARCTIC_P9_MAX_CURVE_PROVENANCE.md). This is not physical validation. |
 
 ## Update protocol
 

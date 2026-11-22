@@ -81,7 +81,7 @@ Sidecars record:
 
 The fan and system sidecars must agree exactly on measurement-basis and operating-condition metadata. A static-pressure fan curve must not be compared with a different pressure basis without an explicit model conversion. The selected static-pressure reference and velocity-pressure treatment must be compatible across the two curves.
 
-The current ARCTIC P9 Max 4300 RPM curve is an approximate manual chart digitization. Its source image, axis calibration, line-picking procedure, and defensible error bounds are not present in the repository. It has no quantified probabilistic uncertainty. The MI50 system-curve template is header-only; no measured MI50 system curve currently exists. Therefore, the current repository inputs do not support a real MI50 uncertainty result. Synthetic curves are for software verification only.
+The canonical ARCTIC P9 Max 4300 RPM curve is a ten-point numerical table extracted from the manufacturer's CFD workbook; the historical manual chart digitization is retained separately. The workbook does not publish pointwise uncertainty, and its `C=0.95` flow-column notation remains unresolved. The MI50 system-curve template is header-only; no measured MI50 system curve currently exists. Therefore, the current repository inputs do not support a real MI50 uncertainty result. Synthetic curves are for software verification only.
 
 ## 5. Sidecar v1 data contract
 

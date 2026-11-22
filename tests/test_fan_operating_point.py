@@ -1,3 +1,4 @@
+import hashlib
 import math
 import tempfile
 import unittest
@@ -30,6 +31,26 @@ class FanCurveTests(unittest.TestCase):
             )
             loaded = FanCurve.from_csv(csv_path)
             self.assertEqual(loaded.points, self.curve.points)
+
+    def test_manufacturer_cfd_curve_is_canonical_and_loads(self):
+        repo_root = Path(__file__).resolve().parents[1]
+        csv_path = repo_root / "data/fan_curves/arctic_p9_max_4300rpm_manufacturer_cfd.csv"
+        self.assertEqual(
+            hashlib.sha256(csv_path.read_bytes()).hexdigest(),
+            "d1c9123afa5bc3c95226cea0a57b58dc4bdc2a63d20e279fea4b5d09d15ae922",
+        )
+
+        curve = FanCurve.from_csv(csv_path)
+        self.assertEqual(len(curve.points), 10)
+        self.assertEqual(curve.points[0][0], 0.0)
+        self.assertAlmostEqual(curve.points[0][1], 6.169283088516466, places=12)
+        self.assertAlmostEqual(curve.points[-1][0], 58.25, places=12)
+        self.assertEqual(curve.points[-1][1], 0.0)
+        self.assertTrue(all(p >= 0.0 for _, p in curve.points))
+        self.assertTrue(all(
+            right[0] > left[0] and right[1] <= left[1]
+            for left, right in zip(curve.points, curve.points[1:])
+        ))
 
     def test_rejects_non_monotone_pressure(self):
         with tempfile.TemporaryDirectory() as temp_dir:

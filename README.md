@@ -9,7 +9,7 @@ Engineering research for a configurable cooling system for the AMD Radeon Instin
 The main implemented capabilities are:
 
 - Fan/system operating-point calculation in `analysis/fan_operating_point.py`.
-- Manual ARCTIC P9 Max 4300 RPM fan-curve digitization in `data/fan_curves/`.
+- Manufacturer-workbook-derived ARCTIC P9 Max 4300 RPM numerical P–Q curve, with the prior manual digitization retained for comparison.
 - A header-only measured MI50 system-curve template in `data/system_curves/`.
 - Weighted photogrammetry scale fitting in `scripts/photogrammetry_scale_fit.py`.
 - MI50 envelope, public-source, physical-measurement, and photogrammetry documentation under `docs/` and at the repository root.
@@ -18,7 +18,7 @@ The main implemented capabilities are:
 
 The following deliverables are **not present in this checkout**: OpenSCAD source models, reference STL meshes, the earlier duct-sizing and acoustic-budget scripts, fan-catalog CSV, and a CFD-ready geometry/boundary-condition package. They must be restored from their authoritative source or developed in separate changes before the repository can be described as containing them.
 
-See [`docs/REPOSITORY_STATUS.md`](docs/REPOSITORY_STATUS.md) for the audited inventory and continuation boundaries.
+See [`docs/REPOSITORY_STATUS.md`](docs/REPOSITORY_STATUS.md) for the audited inventory and continuation boundaries. Fan-data provenance and extraction are recorded in [`docs/ARCTIC_P9_MAX_CURVE_PROVENANCE.md`](docs/ARCTIC_P9_MAX_CURVE_PROVENANCE.md).
 
 ## Development plan and progress
 
@@ -51,7 +51,7 @@ Two system models are supported by the deterministic solver:
 1. **Quadratic screening approximation:** `Δp = K Q²`, with `K` fitted from one user-supplied pressure/flow reference point.
 2. **Tabulated system curve:** measured or otherwise justified total-flow/pressure-drop pairs supplied as CSV. This is the preferred mode once physical measurements exist.
 
-The included P9 Max curve is an approximate manual digitization of the manufacturer's published P–Q chart. Its intermediate values are not manufacturer numerical data. It is suitable for exercising the solver and preliminary screening, not final design sign-off.
+The preferred P9 Max 4300 RPM input is the ten-point numerical table extracted from ARCTIC's `P9 Max - PQ Curve for CFD` workbook. The 19-point manual chart digitization remains in the repository as a historical comparison artifact. The workbook-derived curve is more traceable, not higher-resolution, and has no published pointwise uncertainty; see [the curve provenance record](docs/ARCTIC_P9_MAX_CURVE_PROVENANCE.md). It supports solver and preliminary sensitivity work, not final design sign-off.
 
 ### Quadratic example
 
@@ -59,7 +59,7 @@ The following reference point is hypothetical. It is not a measured MI50 heatsin
 
 ```bash
 python3 analysis/fan_operating_point.py \
-  --curve data/fan_curves/arctic_p9_max_4300rpm_digitized.csv \
+  --curve data/fan_curves/arctic_p9_max_4300rpm_manufacturer_cfd.csv \
   --fan-count 2 \
   --system-pressure-mmh2o 2.0 \
   --system-reference-flow-cfm 50 \
@@ -79,7 +79,7 @@ Then populate it with measured total airflow and differential pressure pairs and
 
 ```bash
 python3 analysis/fan_operating_point.py \
-  --curve data/fan_curves/arctic_p9_max_4300rpm_digitized.csv \
+  --curve data/fan_curves/arctic_p9_max_4300rpm_manufacturer_cfd.csv \
   --system-curve data/system_curves/mi50_system_curve.csv \
   --fan-count 2 \
   --heat-load-w 300
@@ -95,7 +95,7 @@ The model assumes identical fans with equal flow sharing, a steady-state fan cur
 
 The sidecars identify uncertainty for every coordinate, shared source effects, and the original uncertainty statement/conversion notes. The engine rejects unsupported dependencies, invalid sampled curves, and out-of-range roots without repairing curves or retrying invisibly. Reports include trial failures, marginal empirical intervals, and joint output covariance/correlation.
 
-See [`docs/M2_UNCERTAINTY_ENGINE.md`](docs/M2_UNCERTAINTY_ENGINE.md) for the invocation and report contract. The current repository still has no quantified uncertainty for the approximate P9 chart digitization and no measured MI50 system curve. **Do not create real-data sidecars by guessing; no real MI50 probabilistic result can be produced from the current inputs.** Synthetic uncertainty fixtures in the tests are for software verification only.
+See [`docs/M2_UNCERTAINTY_ENGINE.md`](docs/M2_UNCERTAINTY_ENGINE.md) for the invocation and report contract. The manufacturer-workbook P9 curve has no defensible pointwise uncertainty in the source workbook, and the MI50 system-curve template remains unmeasured. **Do not create real-data sidecars by guessing; no real MI50 probabilistic result can be produced from the current inputs.** Synthetic uncertainty fixtures in the tests are for software verification only.
 
 ## Thermal interpretation
 
