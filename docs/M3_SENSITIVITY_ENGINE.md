@@ -19,6 +19,13 @@ The preferred repository P9 Max input is the ten-point manufacturer-workbook-der
 
 A quadratic reference such as 2.0 mmH2O at 50 CFM is a hypothetical screening input, not measured MI50 resistance. No measured MI50 system-curve sweep is currently possible.
 
+The original Noctua NF-A14 PWM manufacturer curve is also available at
+`data/fan_curves/noctua_nf_a14_pwm_1500rpm_manufacturer.csv` for a separate
+1500 RPM M3 comparison. It does not replace the P9 baseline. The Cybenetics
+NF-A14x25 G2 records are preserved in a raw long-form dataset and are not yet
+eligible for M3 because they require a separately reviewed derivation.
+See [`NOCTUA_FAN_DATA_PROVENANCE.md`](NOCTUA_FAN_DATA_PROVENANCE.md).
+
 ## RPM treatment
 
 The default `--rpm-scaling-mode none` permits only the declared reference RPM. A different RPM list is rejected unless the caller explicitly selects `--rpm-scaling-mode affinity-law`.

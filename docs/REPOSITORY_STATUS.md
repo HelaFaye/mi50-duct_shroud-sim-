@@ -17,7 +17,7 @@ The file inventory was enumerated from the working tree and compared with the pu
 | Area | Checked-in files | Status |
 |---|---|---|
 | Fan/system operating point | `analysis/fan_operating_point.py`, `tests/test_fan_operating_point.py` | Implemented; 17 tests |
-| Fan data | manufacturer-workbook-derived `arctic_p9_max_4300rpm_manufacturer_cfd.csv`; historical `arctic_p9_max_4300rpm_digitized.csv`; `data/fan_curves/README.md` | Ten-point manufacturer numerical table; provenance and unresolved `C=0.95` notation documented |
+| Fan data | ARCTIC P9 Max manufacturer-workbook curve and historical digitization; Noctua NF-A14 manufacturer curve; Cybenetics NF-A14x25 G2 raw 72-point dataset; `data/fan_curves/README.md` | P9 remains canonical; NF-A14 is solver-ready at 1500 RPM; G2 measurements preserved raw pending an approved derivation method |
 | System curve | `data/system_curves/mi50_system_curve_template.csv` | Header-only template; no measured MI50 data |
 | Photogrammetry scale fitting | `scripts/photogrammetry_scale_fit.py`, `tests/test_photogrammetry_scale_fit.py` | Implemented; 4 tests |
 | Mechanical identity / provenance | `data/mi50_envelope.json`, `mi50_envelope.json`, `MI50_PUBLIC_REFERENCE_MODELS.md`, `PUBLIC_SOURCES.md`, `docs/` | Documentation/data present; verify against each physical specimen |

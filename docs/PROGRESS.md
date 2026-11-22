@@ -109,6 +109,8 @@ Do not create sidecars with invented uncertainty values or use the engine to cla
 | 2026-11-22 | Inspected and extracted ARCTIC P9 Max manufacturer CFD workbook table | 10 positive-pressure points; workbook SHA-256 `0d323c1ddc730919366df477a298f9d0cdbcee88d0a70e00674a47697d2d8854`; canonical CSV SHA-256 `d1c9123afa5bc3c95226cea0a57b58dc4bdc2a63d20e279fea4b5d09d15ae922`; existing solver load passed; `C=0.95` remains unresolved |
 | 2026-11-22 | Compared manufacturer and historical P9 curves across the same 45 M3 scenarios | Both datasets solved 45/45 scenarios with the same solver source; maximum relative output difference was 1.50884%. Detailed baseline and scenario results are in [`ARCTIC_P9_MAX_CURVE_PROVENANCE.md`](ARCTIC_P9_MAX_CURVE_PROVENANCE.md). This is not physical validation. |
 
+| 2026-11-22 | Imported Noctua NF-A14 manufacturer P–Q data and Cybenetics NF-A14x25 G2 raw measurements | Added solver-ready five-point NF-A14 curve at 1500 RPM and native source table; preserved all 72 Cybenetics measurements with point-level RPM, current and power. G2 remains raw-only pending a reviewed derivation. |
+
 ## Update protocol
 
 Append a dated row for each material change. For completed work, record the resulting commit, local test result, CI run URL/result, and remaining physical-validation limits. Do not mark M2 complete solely because synthetic tests pass.
