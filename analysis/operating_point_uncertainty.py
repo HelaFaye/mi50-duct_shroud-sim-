@@ -17,6 +17,7 @@ import re
 import statistics
 import sys
 from dataclasses import dataclass
+from decimal import Decimal, ROUND_FLOOR
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -28,8 +29,11 @@ from analysis.fan_operating_point import (
 )
 
 SCHEMA_VERSION = "1.0"
-REPORT_VERSION = "1.0"
+REPORT_VERSION = "1.1"
 QUANTILE_METHOD = "Hyndman-Fan type 7 (linear interpolation)"
+DKW_QUANTILE_PRECISION_METHOD = (
+    "Dvoretzky-Kiefer-Wolfowitz (DKW) inequality with conservative order-statistic inversion"
+)
 OUTPUT_FIELDS = (
     "total_flow_cfm",
     "per_fan_flow_cfm",
@@ -547,8 +551,104 @@ def quantile_type7(values: Iterable[float], probability: float) -> float:
     return data[lower] + fraction * (data[upper] - data[lower])
 
 
-def _summarize(values: list[float], coverage_probability: float) -> dict[str, Any]:
+def _dkw_epsilon(
+    sample_count: int,
+    confidence_level: float,
+    familywise_marginal_count: int,
+) -> float:
+    """Return a Bonferroni-adjusted DKW half-width across marginal outputs."""
+    if isinstance(sample_count, bool) or not isinstance(sample_count, int) or sample_count < 1:
+        raise ValueError("sample_count must be a positive integer")
+    if not math.isfinite(confidence_level) or not 0 < confidence_level < 1:
+        raise ValueError("confidence_level must be strictly between 0 and 1")
+    if (
+        isinstance(familywise_marginal_count, bool)
+        or not isinstance(familywise_marginal_count, int)
+        or familywise_marginal_count < 1
+    ):
+        raise ValueError("familywise_marginal_count must be a positive integer")
+    alpha = 1.0 - confidence_level
+    epsilon = math.sqrt(math.log(2.0 * familywise_marginal_count / alpha) / (2.0 * sample_count))
+    return min(1.0, epsilon)
+
+
+def _dkw_quantile_precision(
+    values: list[float],
+    probability: float,
+    epsilon: float,
+) -> dict[str, Any]:
+    """Invert a DKW CDF band into conservative order-statistic quantile bounds.
+
+    For p-epsilon > 0, the lower bound is order statistic
+    floor(n * (p-epsilon)), using the first order statistic when that rank
+    would be zero. For p+epsilon < 1, the upper bound is order statistic
+    floor(n * (p+epsilon)) + 1. These are the left/right empirical inverse
+    conventions; they deliberately avoid interpolated values.
+
+    If p-epsilon <= 0 or p+epsilon >= 1, the corresponding confidence limit
+    is unbounded on the real line and is represented by JSON null.
+    Decimal arithmetic on the shortest round-trip float strings prevents
+    binary floating-point artifacts from changing an exact order-statistic
+    boundary by one rank.
+    """
+    ordered = sorted(values)
+    if not ordered:
+        raise ValueError("quantile precision requires at least one value")
+    if not math.isfinite(probability) or not 0 <= probability <= 1:
+        raise ValueError("quantile probability must be between 0 and 1")
+    if not math.isfinite(epsilon) or not 0 <= epsilon <= 1:
+        raise ValueError("DKW epsilon must be between 0 and 1")
+
+    count = len(ordered)
+    probability_decimal = Decimal(str(probability))
+    epsilon_decimal = Decimal(str(epsilon))
+    lower_probability_decimal = probability_decimal - epsilon_decimal
+    upper_probability_decimal = probability_decimal + epsilon_decimal
+    lower_probability_used = float(max(Decimal(0), lower_probability_decimal))
+    upper_probability_used = float(min(Decimal(1), upper_probability_decimal))
+
+    if lower_probability_decimal <= 0:
+        lower_rank = None
+    else:
+        lower_rank = max(
+            1,
+            int((Decimal(count) * lower_probability_decimal).to_integral_value(rounding=ROUND_FLOOR)),
+        )
+
+    if upper_probability_decimal >= 1:
+        upper_rank = None
+    else:
+        upper_rank = (
+            int((Decimal(count) * upper_probability_decimal).to_integral_value(rounding=ROUND_FLOOR))
+            + 1
+        )
+
+    return {
+        "probability": probability,
+        "type7_estimate": quantile_type7(ordered, probability),
+        "confidence_bounds": {
+            "lower": ordered[lower_rank - 1] if lower_rank is not None else None,
+            "upper": ordered[upper_rank - 1] if upper_rank is not None else None,
+            "lower_unbounded": lower_rank is None,
+            "upper_unbounded": upper_rank is None,
+            "lower_probability_used": lower_probability_used,
+            "upper_probability_used": upper_probability_used,
+            "lower_order_statistic_rank_1_based": lower_rank,
+            "upper_order_statistic_rank_1_based": upper_rank,
+        },
+    }
+
+
+def _summarize(
+    values: list[float],
+    coverage_probability: float,
+    quantile_precision_confidence: float,
+    familywise_marginal_count: int,
+) -> dict[str, Any]:
     tail = (1.0 - coverage_probability) / 2.0
+    epsilon = _dkw_epsilon(
+        len(values), quantile_precision_confidence, familywise_marginal_count
+    )
     return {
         "sample_count": len(values),
         "mean": statistics.fmean(values),
@@ -562,6 +662,18 @@ def _summarize(values: list[float], coverage_probability: float) -> dict[str, An
             "upper": quantile_type7(values, 1.0 - tail),
             "quantile_method": QUANTILE_METHOD,
             "interpretation": "marginal interval conditional on the declared input model and accepted trial population",
+        },
+        "monte_carlo_quantile_precision": {
+            "method": DKW_QUANTILE_PRECISION_METHOD,
+            "familywise_confidence_level": quantile_precision_confidence,
+            "familywise_marginal_count": familywise_marginal_count,
+            "dkw_epsilon": epsilon,
+            "lower_coverage_endpoint": _dkw_quantile_precision(values, tail, epsilon),
+            "upper_coverage_endpoint": _dkw_quantile_precision(values, 1.0 - tail, epsilon),
+            "interpretation": (
+                "Confidence bounds for the population quantile locations due only to finite Monte Carlo "
+                "sample size; they are not predictive coverage intervals or measurement-uncertainty bounds."
+            ),
         },
     }
 
@@ -622,6 +734,7 @@ def run_uncertainty(
     air_density_kg_m3: float = 1.204,
     air_specific_heat_j_kg_k: float = 1006.0,
     coverage_probability: float = 0.95,
+    quantile_precision_confidence: float = 0.95,
     minimum_valid_fraction: float | None = None,
     allow_held_fixed: bool = False,
 ) -> dict[str, Any]:
@@ -633,6 +746,11 @@ def run_uncertainty(
     coverage_probability = _finite_number(coverage_probability, "coverage_probability")
     if not 0 < coverage_probability < 1:
         raise ValueError("coverage_probability must be strictly between 0 and 1")
+    quantile_precision_confidence = _finite_number(
+        quantile_precision_confidence, "quantile_precision_confidence"
+    )
+    if not 0 < quantile_precision_confidence < 1:
+        raise ValueError("quantile_precision_confidence must be strictly between 0 and 1")
     if minimum_valid_fraction is not None:
         minimum_valid_fraction = _finite_number(minimum_valid_fraction, "minimum_valid_fraction")
         if not 0 <= minimum_valid_fraction <= 1:
@@ -770,7 +888,9 @@ def run_uncertainty(
     if sufficient_valid_samples and yield_check is not False:
         columns = list(zip(*output_vectors))
         outputs = {
-            field: _summarize(list(values), coverage_probability)
+            field: _summarize(
+                list(values), coverage_probability, quantile_precision_confidence, len(OUTPUT_FIELDS)
+            )
             for field, values in zip(OUTPUT_FIELDS, columns)
         }
         covariance, correlation = _joint_moments(output_vectors)
@@ -811,6 +931,21 @@ def run_uncertainty(
             "python_version": sys.version,
             "coverage_probability": coverage_probability,
             "quantile_method": QUANTILE_METHOD,
+            "quantile_precision": {
+                "method": DKW_QUANTILE_PRECISION_METHOD,
+                "familywise_confidence_level": quantile_precision_confidence,
+                "familywise_marginal_count": len(OUTPUT_FIELDS),
+                "dkw_epsilon": (
+                    _dkw_epsilon(valid, quantile_precision_confidence, len(OUTPUT_FIELDS))
+                    if outputs is not None else None
+                ),
+                "computed": outputs is not None,
+                "sample_population": "valid-root output vectors only, conditional on acceptance",
+                "familywise_scope": (
+                    "all four marginal output distributions; each marginal DKW band covers all "
+                    "quantile probabilities, with a Bonferroni union bound across marginals"
+                ),
+            },
             "minimum_valid_fraction": minimum_valid_fraction,
             "minimum_valid_fraction_met": yield_check,
             "sufficient_valid_samples_for_sample_covariance": sufficient_valid_samples,
@@ -873,6 +1008,10 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--air-density-kg-m3", type=float, default=1.204)
     parser.add_argument("--air-cp-j-kg-k", type=float, default=1006.0)
     parser.add_argument("--coverage-probability", type=float, default=0.95)
+    parser.add_argument(
+        "--quantile-precision-confidence", type=float, default=0.95,
+        help="familywise Monte Carlo quantile-precision confidence across reported outputs",
+    )
     parser.add_argument("--minimum-valid-fraction", type=float)
     parser.add_argument("--allow-held-fixed", action="store_true", help="explicitly allow incomplete uncertainty coverage")
     parser.add_argument("--output", help="write JSON report to this path instead of stdout")
@@ -901,6 +1040,7 @@ def main(argv: list[str] | None = None) -> int:
             air_density_kg_m3=args.air_density_kg_m3,
             air_specific_heat_j_kg_k=args.air_cp_j_kg_k,
             coverage_probability=args.coverage_probability,
+            quantile_precision_confidence=args.quantile_precision_confidence,
             minimum_valid_fraction=args.minimum_valid_fraction,
             allow_held_fixed=args.allow_held_fixed,
         )

@@ -1,6 +1,7 @@
 import copy
 import hashlib
 import json
+import math
 import tempfile
 import unittest
 from pathlib import Path
@@ -8,6 +9,8 @@ from pathlib import Path
 from analysis.fan_operating_point import FanCurve, SystemCurve, solve_operating_point
 from analysis.operating_point_uncertainty import (
     _apply_draws,
+    _dkw_epsilon,
+    _dkw_quantile_precision,
     quantile_type7,
     run_uncertainty,
 )
@@ -363,6 +366,67 @@ class OperatingPointUncertaintyTests(unittest.TestCase):
     def test_type7_quantile(self):
         self.assertAlmostEqual(quantile_type7([0.0, 10.0, 20.0, 30.0], 0.25), 7.5)
         self.assertEqual(quantile_type7([5.0], 0.95), 5.0)
+
+    def test_dkw_quantile_precision_uses_conservative_order_statistics(self):
+        result = _dkw_quantile_precision(list(range(1, 101)), 0.05, 0.02)
+        bounds = result["confidence_bounds"]
+        self.assertEqual(result["type7_estimate"], 5.95)
+        self.assertEqual(bounds["lower_order_statistic_rank_1_based"], 3)
+        # At n*(p+epsilon)=7 exactly, the conservative right-inverse bound
+        # is the next order statistic (floor(7)+1), not rank 7.
+        self.assertEqual(bounds["upper_order_statistic_rank_1_based"], 8)
+        self.assertEqual(bounds["lower"], 3)
+        self.assertEqual(bounds["upper"], 8)
+        self.assertFalse(bounds["lower_unbounded"])
+        self.assertFalse(bounds["upper_unbounded"])
+
+    def test_dkw_quantile_precision_reports_unbounded_tail_limits(self):
+        lower_unbounded = _dkw_quantile_precision(list(range(1, 11)), 0.05, 0.05)
+        lower_bounds = lower_unbounded["confidence_bounds"]
+        self.assertTrue(lower_bounds["lower_unbounded"])
+        self.assertIsNone(lower_bounds["lower"])
+        self.assertIsNone(lower_bounds["lower_order_statistic_rank_1_based"])
+        self.assertFalse(lower_bounds["upper_unbounded"])
+
+        upper_unbounded = _dkw_quantile_precision(list(range(1, 11)), 0.95, 0.05)
+        upper_bounds = upper_unbounded["confidence_bounds"]
+        self.assertTrue(upper_bounds["upper_unbounded"])
+        self.assertIsNone(upper_bounds["upper"])
+        self.assertIsNone(upper_bounds["upper_order_statistic_rank_1_based"])
+        self.assertFalse(upper_bounds["lower_unbounded"])
+
+    def test_dkw_epsilon_is_familywise_across_four_marginals(self):
+        expected = math.sqrt(math.log(2.0 * 4 / 0.05) / (2.0 * 1000))
+        self.assertAlmostEqual(_dkw_epsilon(1000, 0.95, 4), expected)
+
+    def test_report_includes_quantile_precision_diagnostics(self):
+        report = self.run_model(trials=250, quantile_precision_confidence=0.90)
+        self.assertEqual(report["report_version"], "1.1")
+        run_precision = report["run"]["quantile_precision"]
+        self.assertTrue(run_precision["computed"])
+        self.assertEqual(run_precision["familywise_confidence_level"], 0.90)
+        self.assertEqual(run_precision["familywise_marginal_count"], 4)
+        for field in (
+            "total_flow_cfm",
+            "per_fan_flow_cfm",
+            "common_static_pressure_mmh2o",
+            "ideal_bulk_air_temperature_rise_c",
+        ):
+            precision = report["outputs"][field]["monte_carlo_quantile_precision"]
+            self.assertAlmostEqual(precision["familywise_confidence_level"], 0.90)
+            for endpoint_name in ("lower_coverage_endpoint", "upper_coverage_endpoint"):
+                endpoint = precision[endpoint_name]
+                bounds = endpoint["confidence_bounds"]
+                self.assertEqual(bounds["lower_unbounded"], bounds["lower"] is None)
+                self.assertEqual(bounds["upper_unbounded"], bounds["upper"] is None)
+                if bounds["lower"] is not None:
+                    self.assertLessEqual(bounds["lower"], endpoint["type7_estimate"])
+                if bounds["upper"] is not None:
+                    self.assertLessEqual(endpoint["type7_estimate"], bounds["upper"])
+
+    def test_invalid_quantile_precision_confidence_is_rejected(self):
+        with self.assertRaisesRegex(ValueError, "quantile_precision_confidence must be strictly between 0 and 1"):
+            self.run_model(quantile_precision_confidence=1.0)
 
     def test_json_schema_file_is_present_and_parses(self):
         schema_path = Path(__file__).resolve().parents[1] / "schemas" / "curve-uncertainty-v1.schema.json"

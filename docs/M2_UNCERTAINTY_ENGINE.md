@@ -1,6 +1,6 @@
 # M2 v1 uncertainty propagation engine
 
-_Status: first M2 v1 implementation committed as `f7f3b1fab65493cfc885befff4bee7c2dfe70a58`; 51-test local integration and Python 3.10/3.12/3.14 CI passed. M2 remains in progress pending further implementation review and acceptance._
+_Status: M2 v1 prototype committed as `f7f3b1fab65493cfc885befff4bee7c2dfe70a58` and CI-verified. M2 v1.1 DKW quantile-precision changes are applied and locally validated: compilation passed, all 56 tests passed, and `git diff --check` passed. GitHub Actions validation of v1.1 remains pending._
 
 ## Purpose
 
@@ -36,6 +36,7 @@ python3 -m analysis.operating_point_uncertainty \
   --trials 100000 \
   --seed 20261121 \
   --coverage-probability 0.95 \
+  --quantile-precision-confidence 0.95 \
   --output <report.json>
 ```
 
@@ -43,7 +44,7 @@ python3 -m analysis.operating_point_uncertainty \
 
 The requested trial count is the attempted count, not a target number of successful roots. Every unique source is drawn once per attempt, even when another source's draw is invalid; this keeps the random stream and attempt semantics reproducible. `outcome_counts` accounts for every attempt, including `valid_root`; failures are also retained separately by category. Fewer than two valid roots are always inconclusive because sample standard uncertainty and covariance cannot be estimated. If an explicit minimum valid fraction is not met, the run is also inconclusive and output intervals are suppressed. No extrapolation or curve repair is performed.
 
-The two-valid-root minimum is only a mathematical minimum for sample standard deviation and covariance. It is not a statistical precision criterion for empirical tail quantiles. Review the valid count and fraction alongside every interval; further M2 work may add an explicit minimum valid-sample count or Monte Carlo quantile-precision diagnostic, without silently imposing a universal threshold.
+The two-valid-root minimum is only a mathematical minimum for sample standard deviation and covariance. It is not a statistical precision criterion for empirical tail quantiles. The M2 v1.1 candidate adds a distribution-free DKW diagnostic for the Monte Carlo precision of both reported coverage endpoints. Its default 95% confidence is familywise across the four marginal output distributions; the DKW band is simultaneous over quantile probabilities within each marginal, with a Bonferroni union bound across the four marginals. The order-statistic inversion uses the left empirical inverse at p-epsilon for the lower limit and the right empirical inverse at p+epsilon for the upper limit: for n accepted samples, the finite lower rank is floor(n(p-epsilon)) (using rank 1 when the positive probability is below 1/n), and the finite upper rank is floor(n(p+epsilon))+1. These one-sided inverse conventions deliberately widen exact rank-boundary cases. If p-epsilon is non-positive, the lower confidence limit is unbounded; if p+epsilon is at least one, the upper confidence limit is unbounded. Such limits are serialized as null with an explicit unbounded flag; they must not be replaced by the observed sample minimum or maximum. The diagnostic uses only accepted valid-root vectors and therefore describes finite Monte Carlo sampling error conditional on the declared input model and acceptance process. It is not another predictive interval, does not quantify measurement uncertainty, and does not establish that the input PDFs are defensible. It does not impose an automatic pass/fail sample-size threshold: inspect the reported quantile bounds relative to the endpoint estimates and the engineering decision tolerance.
 
 ## Report
 
@@ -55,14 +56,15 @@ The JSON report records:
 - source definitions, original uncertainty statements, conversion notes, target mappings, measurement basis, operating conditions, and any held-fixed omissions;
 - valid/failed counts, valid fraction, failure categories, and optional yield-threshold result;
 - marginal output means, sample standard uncertainties, medians, extrema, and central empirical intervals using Hyndman-Fan type 7;
+- DKW order-statistic confidence bounds for the Monte Carlo precision of each central-interval endpoint, with familywise confidence across all four marginal outputs;
 - covariance and correlation matrices computed from the same valid joint output vectors.
 
-Intervals are marginal and conditional on the declared PDFs, dependence assumptions, physically valid sampled curves, and existence of an in-range root. They are not confidence intervals, not simultaneous joint coverage regions, and not physical validation of the hardware.
+The central empirical coverage intervals are marginal and conditional on the declared PDFs, dependence assumptions, physically valid sampled curves, and existence of an in-range root. They are not confidence intervals or simultaneous joint coverage regions. The separate DKW bounds are confidence bounds for the finite-sample Monte Carlo estimation of the population quantile locations only; they do not widen or replace the predictive coverage intervals. Neither report establishes physical validation of the hardware.
 
 ## Verification coverage
 
 The 30 new tests use generated synthetic curves and synthetic sidecars. They cover CSV hash binding, schema-version and unknown-field rejection, duplicate JSON keys, source sharing across curves, conflicting source definitions, unsupported dependence, explicit held-fixed opt-in, coordinate/anchor validation, measurement and operating-condition compatibility, supported distributions, seeded reproducibility, full source-draw accounting for invalid attempts, exact attempted-trial accounting, insufficient-valid-sample handling, invalid curve/effect reporting, no-extrapolation/root-range behavior, zero-uncertainty recovery, marginal quantiles, and joint covariance/correlation.
 
-The original 21 tests plus the 30 new tests passed locally: 51/51 total. GitHub Actions run [44986689330](https://github.com/HelaFaye/mi50-duct_shroud-sim-/actions/runs/44986689330) also passed compilation and the full unit-test step on Python 3.10, 3.12, and 3.14.
+The original 21 tests plus the 30 M2 v1 tests passed locally: 51/51 total. GitHub Actions run [44986689330](https://github.com/HelaFaye/mi50-duct_shroud-sim-/actions/runs/44986689330) also passed compilation and the full unit-test step on Python 3.10, 3.12, and 3.14. Five new M2 v1.1 DKW regression tests cover familywise epsilon, conservative order-statistic inversion, unbounded tail handling, report diagnostics, and confidence-parameter validation. The complete local suite then passed: 21 original tests + 30 M2 v1 tests + 5 M2 v1.1 tests = 56/56. GitHub Actions validation of the v1.1 changes remains pending.
 
 No real MI50 uncertainty result can be produced from the current repository: the P9 curve is approximate manual digitization without defensible quantified uncertainty, and the MI50 system curve remains a header-only template. Use these synthetic tests for software verification only.

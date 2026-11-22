@@ -65,7 +65,7 @@ Accepted decisions include explicit per-coordinate coverage, SHA-256-bound sidec
 
 V1 is limited to tabulated fan and system curves with fixed fan/thermal inputs. Preserve deterministic API/CLI behavior. Use exact CSV hashes, explicit seed/trial count, one draw per shared source ID, no implicit independence beyond the declared v1 assumption, physical curve validation, no extrapolation, fixed attempted-trial accounting, and categorized failures. Report conditional marginal intervals and joint covariance/correlation from the same valid output vectors.
 
-Acceptance tests include zero-uncertainty recovery, source sharing, seeded reproducibility, strict sidecar validation, anchor handling, unsupported-dependence rejection, invalid-curve accounting, range/root failures, quantile calculations, and joint output statistics. Synthetic tests do not constitute MI50 hardware validation.
+Acceptance tests include zero-uncertainty recovery, source sharing, seeded reproducibility, strict sidecar validation, anchor handling, unsupported-dependence rejection, invalid-curve accounting, range/root failures, Type 7 quantiles, DKW finite-Monte-Carlo quantile-precision bounds with familywise coverage across outputs, and joint output statistics. Synthetic tests do not constitute MI50 hardware validation. The DKW diagnostic must remain separate from the predictive output interval and must not impose an undocumented automatic sample-size threshold.
 
 ### M3 — Fan-RPM and system-resistance sensitivity
 
