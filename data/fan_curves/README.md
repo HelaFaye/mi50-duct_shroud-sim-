@@ -16,6 +16,14 @@ and data quality in the corresponding documentation or filename.
 
 `arctic_p9_max_4300rpm_digitized.csv` is an **approximate manual digitization**
 of ARCTIC's published P9 Max 4300 RPM P–Q chart (PDF dated 2025-01-17). It is
-not the manufacturer's underlying CFD spreadsheet and should be replaced by
-that numeric data if extracted. It is suitable for exercising the operating-
+not manufacturer-supplied numerical data. The separately listed CFD workbook
+below is a candidate source whose contents and test conditions remain unverified. It is suitable for exercising the operating-
 point solver and preliminary sensitivity analysis, not final design sign-off.
+
+
+ARCTIC's official [P9 Max documentation](https://support.arctic.de/en/p9-max/docs)
+also lists a separate **P9 Max - PQ Curve for CFD** XLSX workbook alongside
+the published P-Q chart. That workbook is a candidate numerical source for a more traceable curve
+reconstruction; its resolution and equivalence to the chart conditions are unknown. Its sheets, units, pressure
+definition, operating conditions, and numerical contents must be inspected
+before adopting its data; it has not yet been validated against this CSV.

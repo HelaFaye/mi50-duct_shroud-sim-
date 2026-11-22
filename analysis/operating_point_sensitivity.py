@@ -263,24 +263,53 @@ def run_sensitivity(
 
     scenario_rows: list[dict[str, Any]] = []
     for target_rpm, fan_count, resistance_multiplier in product(rpms, counts, multipliers):
-        scaled_fan, rpm_ratio = _affinity_scaled_fan_curve(fan_curve, reference_rpm, target_rpm)
-        if system_mode == "tabulated_curve_uniform_pressure_multiplier":
-            assert base_system_curve is not None
-            sampled_system = _resistance_scaled_system_curve(base_system_curve, resistance_multiplier)
-            solve_kwargs = {"system_curve": sampled_system}
-        else:
-            assert quadratic_reference is not None
-            solve_kwargs = {
-                "system_pressure_mmh2o": quadratic_reference["pressure_mmh2o"] * resistance_multiplier,
-                "system_reference_flow_cfm": quadratic_reference["flow_cfm"],
-            }
+        ratio_estimate = target_rpm / reference_rpm
+        if not math.isfinite(ratio_estimate):
+            ratio_estimate = None
+
         row: dict[str, Any] = {
             "rpm": target_rpm,
-            "rpm_ratio_to_reference": rpm_ratio,
-            "rpm_curve_basis": "reference_curve" if math.isclose(rpm_ratio, 1.0, rel_tol=1e-12, abs_tol=1e-12) else "affinity_law_derived",
+            "rpm_ratio_to_reference": ratio_estimate,
+            "rpm_curve_basis": (
+                "reference_curve"
+                if math.isclose(target_rpm, reference_rpm, rel_tol=1e-12, abs_tol=1e-12)
+                else "affinity_law_derived"
+            ),
             "fan_count_parallel": fan_count,
             "system_resistance_multiplier": resistance_multiplier,
         }
+
+        try:
+            scaled_fan, rpm_ratio = _affinity_scaled_fan_curve(
+                fan_curve, reference_rpm, target_rpm
+            )
+            row["rpm_ratio_to_reference"] = rpm_ratio
+
+            if system_mode == "tabulated_curve_uniform_pressure_multiplier":
+                assert base_system_curve is not None
+                sampled_system = _resistance_scaled_system_curve(
+                    base_system_curve, resistance_multiplier
+                )
+                solve_kwargs = {"system_curve": sampled_system}
+            else:
+                assert quadratic_reference is not None
+                solve_kwargs = {
+                    "system_pressure_mmh2o": (
+                        quadratic_reference["pressure_mmh2o"] * resistance_multiplier
+                    ),
+                    "system_reference_flow_cfm": quadratic_reference["flow_cfm"],
+                }
+
+        except (ValueError, RuntimeError, ArithmeticError) as exc:
+            row.update({
+                "status": "failed",
+                "outputs": None,
+                "failure_category": "curve_scaling_failure",
+                "error": str(exc),
+            })
+            scenario_rows.append(row)
+            continue
+
         try:
             result = solve_operating_point(
                 curve=scaled_fan,
@@ -293,7 +322,7 @@ def run_sensitivity(
             outputs = {field: getattr(result, field) for field in OUTPUT_FIELDS}
             outputs["system_resistance_k_mmh2o_per_cfm2"] = result.system_resistance_k_mmh2o_per_cfm2
             row.update({"status": "solved", "outputs": outputs, "failure_category": None, "error": None})
-        except (ValueError, RuntimeError) as exc:
+        except (ValueError, RuntimeError, ArithmeticError) as exc:
             row.update({
                 "status": "failed",
                 "outputs": None,
@@ -348,6 +377,7 @@ def run_sensitivity(
                 "same fan geometry and impeller diameter",
                 "constant air density between reference and target speeds",
                 "similar aerodynamic operating regime; Reynolds-number effects must be reviewed",
+                "compressibility and tip-speed Mach-number similarity must also be checked",
                 "fan pressure and flow are derived by Q proportional to RPM and pressure proportional to RPM squared",
                 "derived target-speed curves are model scenarios, not measured curves",
             ]

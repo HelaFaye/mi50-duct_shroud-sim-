@@ -1,6 +1,6 @@
 # M3 deterministic operating-point sensitivity engine
 
-_Status: initial deterministic scenario-sweep prototype prepared for repository integration and validation. It is not yet committed or CI-verified._
+_Status: initial implementation committed as `5919163` and CI-verified. Follow-up scenario-failure-isolation hardening passes 87/87 local tests and awaits its own commit and CI run._
 
 ## Purpose and scope
 
@@ -27,7 +27,7 @@ The affinity-law mode derives a target-speed curve from the reference curve usin
 Q_2/Q_1=N_2/N_1, \qquad \Delta p_2/\Delta p_1=(N_2/N_1)^2.
 \]
 
-Every derived scenario is labeled `affinity_law_derived`. The report records the speed ratio and assumptions. This is not a measured multi-speed fan curve or a guarantee of dynamic similarity. Reynolds-number effects and aerodynamic regime must be reviewed; geometric similarity, density, and relevant flow-regime similarity matter. The reference P9 digitization remains approximate, so scaled results inherit its data-quality limitations. See [ANSI/AMCA 99-25, *Standards Handbook*, section 4](https://www.amca.org/assets/resources/public/resources/ansi-amca-99-25-standards-handbook.pdf), for fan-law similarity requirements.
+Every derived scenario is labeled `affinity_law_derived`. The report records the speed ratio and assumptions. This is not a measured multi-speed fan curve or a guarantee of dynamic similarity. The applicability review must include geometric, kinematic, and dynamic similarity, density/compressibility, Reynolds number, and tip-speed Mach number. Using the same fan at another RPM does not by itself establish dynamic similarity. The reference P9 digitization remains approximate, so scaled results inherit its data-quality limitations. See [ANSI/AMCA 99-25, *Standards Handbook*, section 4](https://www.amca.org/assets/resources/public/resources/ansi-amca-99-25-standards-handbook.pdf), for fan-law similarity requirements.
 
 No electrical input power is calculated. The cubic speed relationship is not applied because measured electrical or shaft-power data and a motor/fan efficiency model are absent. RPM, electrical input, and system resistance remain separate quantities.
 
@@ -36,7 +36,7 @@ No electrical input power is calculated. The cubic speed relationship is not app
 - For the quadratic model, a multiplier scales the reference pressure at fixed reference flow, which multiplies the fitted `K` by the same factor.
 - For a tabulated system curve, the multiplier scales every pressure ordinate uniformly while preserving its flow coordinates and curve shape. This is an explicit shape-preserving scenario assumption, not a claim that an arbitrary geometry change produces that exact curve.
 
-The tabulated curve still uses the deterministic solver's no-extrapolation behavior. An undersized curve produces a failed scenario with a reason; the tool does not extend the curve.
+The tabulated curve still uses the deterministic solver's no-extrapolation behavior. An undersized curve or an invalid per-scenario curve transformation produces a failed scenario with a reason; the tool does not extend the curve or abort otherwise valid scenarios.
 
 ## Baseline comparison and report
 
@@ -70,5 +70,6 @@ Omit `--rpm-scaling-mode affinity-law` and use only `--rpms 4300` to hold fan sp
 ## Verification gates
 
 - Synthetic tests cover affinity scaling, explicit opt-in, baseline requirements, fan-count and resistance trends, tabulated-curve pressure scaling, deterministic output, and baseline comparisons.
-- The existing 56-test suite must remain green, and the full suite must pass on Python 3.10, 3.12, and 3.14 in CI.
+- Initial commit `5919163` passed 85/85 local tests and GitHub Actions run [45011421134](https://github.com/HelaFaye/mi50-duct_shroud-sim-/actions/runs/45011421134) on Python 3.10, 3.12, and 3.14.
+- Follow-up scenario-failure isolation adds two regression tests. The resulting 87-test suite passes locally on Python 3.14.7; the follow-up still requires CI verification.
 - Software tests establish implementation behavior only. They do not validate the P9 digitization, the affinity-law similarity assumption, the hypothetical resistance reference, or installed MI50 performance.

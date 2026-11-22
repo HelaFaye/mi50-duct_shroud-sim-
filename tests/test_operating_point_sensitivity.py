@@ -169,6 +169,46 @@ class OperatingPointSensitivityTests(unittest.TestCase):
         self.assertEqual(failed["failure_category"], "system_curve_range_too_short")
         self.assertIsNone(failed["outputs"])
 
+    def test_affinity_scaling_failure_is_retained_as_failed_scenario(self):
+        report = self.run_model(
+            rpm_values=[4000.0, 1e308],
+            rpm_scaling_mode="affinity-law",
+            fan_counts=[1],
+            system_resistance_multipliers=[1.0],
+        )
+
+        self.assertEqual(report["status"], "partial")
+        self.assertEqual(report["run"]["failed_scenarios"], 1)
+
+        failed = next(
+            row for row in report["scenarios"]
+            if row["rpm"] == 1e308
+        )
+        self.assertEqual(failed["status"], "failed")
+        self.assertEqual(failed["failure_category"], "curve_scaling_failure")
+        self.assertIsNone(failed["outputs"])
+        self.assertIsNone(failed["comparison_to_baseline"])
+
+    def test_tabulated_system_scaling_failure_is_retained(self):
+        report = self.run_model(
+            system_pressure_mmh2o=None,
+            system_reference_flow_cfm=None,
+            system_curve_path=self.system_path,
+            fan_counts=[1],
+            system_resistance_multipliers=[1.0, 1e308],
+        )
+
+        self.assertEqual(report["status"], "partial")
+        self.assertEqual(report["run"]["failed_scenarios"], 1)
+
+        failed = next(
+            row for row in report["scenarios"]
+            if row["system_resistance_multiplier"] == 1e308
+        )
+        self.assertEqual(failed["status"], "failed")
+        self.assertEqual(failed["failure_category"], "curve_scaling_failure")
+        self.assertIsNone(failed["outputs"])
+
     def test_zero_heat_load_has_undefined_relative_temperature_change(self):
         report = self.run_model(heat_load_w=0.0, fan_counts=[1], system_resistance_multipliers=[1.0])
         comparison = report["scenarios"][0]["comparison_to_baseline"]["ideal_bulk_air_temperature_rise_c"]
