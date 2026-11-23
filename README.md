@@ -40,7 +40,7 @@ The project uses Python's standard library for its analysis and tests; no third-
 python3 -m unittest discover -s tests -v
 ```
 
-The original baseline suite contains 21 tests: 17 fan/system operating-point tests and 4 photogrammetry scale-fit tests. The M2 v1 overlay adds 30 synthetic uncertainty-engine tests. After overlay integration, run the complete combined suite; GitHub Actions runs it on Python 3.10, 3.12, and 3.14 for pushes and pull requests.
+The combined suite currently contains 156 tests covering the deterministic solver, measured-curve solver, sensitivity and uncertainty engines, electrical model, fan datasets, and photogrammetry scale fitting. GitHub Actions runs it on Python 3.10, 3.12, and 3.14 for pushes and pull requests.
 
 ## Fan/system operating-point solver
 

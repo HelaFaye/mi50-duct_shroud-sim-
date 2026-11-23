@@ -16,7 +16,9 @@ import argparse
 import csv
 import json
 import math
+from bisect import bisect_left
 from dataclasses import asdict, dataclass
+from functools import cached_property
 from pathlib import Path
 from typing import Iterable
 
@@ -90,29 +92,39 @@ class _PiecewiseLinearCurve:
 
     points: tuple[tuple[float, float], ...]
     source: str
+    _curve_name = "curve"
 
     @property
     def max_flow_cfm(self) -> float:
         return self.points[-1][0]
 
+    @cached_property
+    def _flows(self) -> tuple[float, ...]:
+        # Cached on the instance (not a dataclass field); points are immutable.
+        return tuple(flow for flow, _ in self.points)
+
     def pressure_at(self, flow_cfm: float) -> float:
         if not math.isfinite(flow_cfm):
             raise ValueError("flow must be finite")
-        low_flow = self.points[0][0]
-        high_flow = self.points[-1][0]
+        points = self.points
+        low_flow = points[0][0]
+        high_flow = points[-1][0]
         tolerance = 1e-10 * max(1.0, high_flow)
         if flow_cfm < low_flow - tolerance or flow_cfm > high_flow + tolerance:
-            curve_name = "fan curve" if self.__class__.__name__ == "FanCurve" else "system curve"
             raise ValueError(
-                f"flow {flow_cfm:.6g} CFM is outside the supplied {curve_name} "
+                f"flow {flow_cfm:.6g} CFM is outside the supplied {self._curve_name} "
                 f"({low_flow:.6g}–{high_flow:.6g} CFM); extrapolation is disabled"
             )
         flow_cfm = min(max(flow_cfm, low_flow), high_flow)
-        for (q0, p0), (q1, p1) in zip(self.points, self.points[1:]):
-            if flow_cfm <= q1:
-                fraction = (flow_cfm - q0) / (q1 - q0)
-                return p0 + fraction * (p1 - p0)
-        return self.points[-1][1]
+        # First segment whose right-hand flow is >= the query (same segment the
+        # original linear scan selected), found by binary search.
+        index = bisect_left(self._flows, flow_cfm, 1)
+        if index >= len(points):
+            return points[-1][1]
+        q0, p0 = points[index - 1]
+        q1, p1 = points[index]
+        fraction = (flow_cfm - q0) / (q1 - q0)
+        return p0 + fraction * (p1 - p0)
 
 
 @dataclass(frozen=True)
@@ -121,6 +133,7 @@ class FanCurve(_PiecewiseLinearCurve):
 
     points: tuple[tuple[float, float], ...]
     source: str = "unspecified"
+    _curve_name = "fan curve"
 
     @classmethod
     def from_csv(cls, path: str | Path) -> "FanCurve":
@@ -149,6 +162,7 @@ class SystemCurve(_PiecewiseLinearCurve):
 
     points: tuple[tuple[float, float], ...]
     source: str = "unspecified system curve"
+    _curve_name = "system curve"
 
     @classmethod
     def from_csv(cls, path: str | Path) -> "SystemCurve":

@@ -27,6 +27,7 @@ from analysis.fan_operating_point import (
     _validate_points,
     solve_operating_point,
 )
+from analysis.operating_point_sensitivity import _reject_output_input_collision
 
 SCHEMA_VERSION = "1.0"
 REPORT_VERSION = "1.1"
@@ -1046,6 +1047,15 @@ def main(argv: list[str] | None = None) -> int:
         )
         rendered = json.dumps(report, indent=2, sort_keys=True, allow_nan=False) + "\n"
         if args.output:
+            inputs = report["inputs"]
+            _reject_output_input_collision(
+                args.output,
+                [
+                    Path(inputs[key]["path"])
+                    for key in ("fan_curve", "system_curve", "fan_sidecar", "system_sidecar")
+                ]
+                + [Path(__file__), Path(__file__).with_name("fan_operating_point.py")],
+            )
             Path(args.output).write_text(rendered, encoding="utf-8")
         else:
             sys.stdout.write(rendered)

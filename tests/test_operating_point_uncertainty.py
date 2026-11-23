@@ -1,5 +1,7 @@
+import contextlib
 import copy
 import hashlib
+import io
 import json
 import math
 import tempfile
@@ -11,6 +13,7 @@ from analysis.operating_point_uncertainty import (
     _apply_draws,
     _dkw_epsilon,
     _dkw_quantile_precision,
+    main as uncertainty_main,
     quantile_type7,
     run_uncertainty,
 )
@@ -510,6 +513,41 @@ class OperatingPointUncertaintyTests(unittest.TestCase):
         self.assertEqual(report["run"]["attempted_trials"], 100)
         self.assertGreater(report["run"]["failure_counts"]["invalid_source_effect"], 0)
         self.assertEqual(report["run"]["valid_trials"] + report["run"]["failed_trials"], 100)
+
+
+    def _cli_args(self, output):
+        return [
+            "--fan-curve", str(self.fan_path),
+            "--system-curve", str(self.system_path),
+            "--fan-sidecar", str(self.fan_sidecar),
+            "--system-sidecar", str(self.system_sidecar),
+            "--repo-root", str(self.root),
+            "--fan-count", "1",
+            "--fan-model", CONDITION["fan_model"],
+            "--configuration-id", CONDITION["configuration_id"],
+            "--rpm", str(CONDITION["rpm"]),
+            "--voltage-v", str(CONDITION["voltage_v"]),
+            "--pwm-percent", str(CONDITION["pwm_percent"]),
+            "--trials", "16",
+            "--seed", "7",
+            "--output", str(output),
+        ]
+
+    def test_cli_output_must_not_overwrite_an_input(self):
+        for protected in (self.fan_path, self.system_path, self.fan_sidecar, self.system_sidecar):
+            with self.subTest(protected=protected.name):
+                original = protected.read_bytes()
+                with contextlib.redirect_stderr(io.StringIO()):
+                    with self.assertRaises(SystemExit) as raised:
+                        uncertainty_main(self._cli_args(protected))
+                self.assertEqual(raised.exception.code, 2)
+                self.assertEqual(protected.read_bytes(), original)
+
+    def test_cli_writes_report_to_new_output_file(self):
+        output = self.root / "report.json"
+        self.assertEqual(uncertainty_main(self._cli_args(output)), 0)
+        report = json.loads(output.read_text(encoding="utf-8"))
+        self.assertEqual(report["run"]["attempted_trials"], 16)
 
 
 if __name__ == "__main__":
