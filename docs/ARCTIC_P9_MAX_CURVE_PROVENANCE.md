@@ -127,3 +127,53 @@ The MI50 system-curve template remains header-only. A hypothetical quadratic
 system reference such as 2.0 mmH2O at 50 CFM remains a screening assumption,
 not measured MI50 resistance. No real MI50 probabilistic or physical
 performance result follows from adopting this fan dataset.
+
+## Electrical PWM dataset and source handling
+
+The canonical P9 P–Q curve and this electrical PWM table describe different
+properties. The P–Q curve is an airflow/static-pressure relationship at a
+specified fan speed; this table records fan speed, supply voltage, current,
+and power against PWM duty cycle. Do not merge the two datasets or infer
+motor input from the aerodynamic curve.
+
+- Fan: ARCTIC P9 Max, nominal 4300 RPM model.
+- Official documentation page: <https://support.arctic.de/en/p9-max/docs>.
+- Official PDF title/listing: `PWM Curve, 4300 RPM, P9 Max (2025-01-17)`.
+- Official PDF: <https://support.arctic.de/products/p9-max/techdocs/PWM%20Curve%2C%204300%20RPM%2C%20P9%20Max%20%282025-01-17%29.pdf>.
+- Local source filename: `arctic_p9_max_pwm_curve_2025-01-17.pdf`.
+- Local source PDF SHA-256: `9a7ea47c8965cfd303a347c03e10784ef83eeb26afcda00b65ca04e09608b41f`.
+- PDF physical page count: 1. The footer says `Page 2`; record both facts.
+- Footer document date: `2024-11-15`. The official documentation listing
+  labels the PDF `(2025-01-17)`; these are distinct metadata fields.
+- Footer classification: `Confidential`.
+- Tables: 12.00 V, 7.00 V, and 5.00 V, each with 20 PWM rows.
+- Local transcription:
+  `data/fan_curves/arctic_p9_max_pwm_electrical.csv`.
+- Local CSV SHA-256: `ed98b8526bc711b0b8ec15cf588784e794c0db62f986fd9e0c7bab5e2e4654f7`.
+
+### Transcription and handling rules
+
+`source_table_row` preserves the original row number within each voltage table
+and resets from 1 through 20 for each voltage. The CSV retains the three source
+tables in 12 V, 7 V, then 5 V order. The displayed two-decimal current and
+power values are preserved as strings. In particular, at 7 V and 6–10% PWM
+the source displays `0.00 A` and `0.02 W`; at 12 V it displays `0.01 A` and
+`0.07 W`. Do not enforce `P = V I` against rounded source values, recompute
+power, or replace the displayed values with calculated values.
+
+The source PDF footer is marked `Confidential`; this classification is
+recorded here as source-provenance metadata. The repository retains a
+numerical transcription of the reported values for reproducible engineering
+analysis and links to ARCTIC's official source rather than bundling the PDF.
+The CSV preserves the displayed source precision and ordering. It is a
+project-maintained transcription, not an in-house measurement or an
+ARCTIC-endorsed project artifact.
+
+### Derived 4300 RPM electrical estimate at 12 V
+
+The 4300 RPM target lies between the 90% PWM observation (4119 RPM, 0.25 A,
+3.05 W) and the 100% observation (4476 RPM, 0.32 A, 3.85 W). Linear
+interpolation in RPM gives approximately **0.28549 A** and **3.45560 W per
+fan** at 12 V. These are derived estimates, not measured 4300 RPM electrical
+observations. The interpolation is only between the two supplied endpoint
+observations; it does not establish behavior at another supply voltage.

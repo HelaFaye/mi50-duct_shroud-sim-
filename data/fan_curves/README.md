@@ -74,3 +74,20 @@ for the source limitations and metrology boundary.
 The P9 files remain unchanged. Both Noctua additions are separate evidence
 records; neither establishes the installed MI50 system curve or final cooling
 performance.
+
+## ARCTIC P9 Max electrical PWM dataset
+
+The separate ARCTIC P9 Max electrical PWM source is the official
+[`PWM Curve, 4300 RPM, P9 Max (2025-01-17)` PDF](https://support.arctic.de/products/p9-max/techdocs/PWM%20Curve%2C%204300%20RPM%2C%20P9%20Max%20%282025-01-17%29.pdf).
+It reports speed, current, and power at 12 V, 7 V, and 5 V. It is not a P–Q
+curve and must not be used as one.
+
+The numerical transcription is included in
+`arctic_p9_max_pwm_electrical.csv` (60 rows; SHA-256
+`ed98b8526bc711b0b8ec15cf588784e794c0db62f986fd9e0c7bab5e2e4654f7`). The source
+PDF footer is marked `Confidential`; this classification is retained in the
+provenance record. The repository links to ARCTIC's official PDF but does not
+bundle the original document. See
+[`../../docs/ARCTIC_P9_MAX_CURVE_PROVENANCE.md`](../../docs/ARCTIC_P9_MAX_CURVE_PROVENANCE.md)
+for source identity, transcription methodology, precision rules, and the
+derived 4300 RPM estimate.
