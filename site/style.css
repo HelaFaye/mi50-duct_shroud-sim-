@@ -41,6 +41,7 @@
 }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0; background: var(--bg); color: var(--text);
@@ -166,7 +167,7 @@ figcaption { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center;
 
 .acoustics-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; }
 .acoustic-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; align-content: start; }
-.acoustic-fields label { display: grid; gap: 4px; font-size: 0.85rem; font-weight: 600; }
+.acoustic-fields label { display: grid; align-content: start; gap: 4px; font-size: 0.85rem; font-weight: 600; }
 .acoustic-fields small { color: var(--muted); font-weight: 400; font-size: 0.75rem; }
 .noise-result-main { display: grid; gap: 2px; padding: 14px; border-radius: 8px; background: var(--surface-2); }
 .noise-result-main strong { font-size: 1.6rem; font-variant-numeric: tabular-nums; }

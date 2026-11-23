@@ -21,7 +21,7 @@ The file inventory was enumerated from the working tree and compared with the pu
 | System curve | `data/system_curves/mi50_system_curve_template.csv` | Header-only template; no measured MI50 data |
 | Photogrammetry scale fitting | `scripts/photogrammetry_scale_fit.py`, `tests/test_photogrammetry_scale_fit.py` | Implemented; 4 tests |
 | Mechanical identity / provenance | `data/mi50_envelope.json`, `mi50_envelope.json`, `MI50_PUBLIC_REFERENCE_MODELS.md`, `PUBLIC_SOURCES.md`, `docs/` | Documentation/data present; verify against each physical specimen |
-| Browser content | `site/index.html`, `site/docs/` | Static site files present; inspect dependencies before claiming an integrated CAD editor |
+| Parametric editor / browser simulation | `site/`, `scripts/build_site_data.py`, `site/tests/`, `tests/test_site_parity.py` | Implemented: watertight STL and independent OpenSCAD export, JS solver verified equal to the Python solver, OpenSCAD/mesh volume parity; see `docs/SHROUD_EDITOR.md`. Cooler inlet size remains unmeasured |
 | CFD | `simulation/README.md` | Planning/documentation only; no validated CFD case or fluid mesh present |
 | Automated Python CI | `.github/workflows/tests.yml` | Implemented; Python 3.10, 3.12, and 3.14 jobs passed in run 44953907969 |
 

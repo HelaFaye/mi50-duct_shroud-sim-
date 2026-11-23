@@ -423,6 +423,7 @@ async function init() {
   try {
     const { ShroudViewer } = await import('./viewer.js');
     viewer = new ShroudViewer($('preview'));
+    window.mi50Viewer = viewer; // debugging handle
   } catch (err) {
     const message = $('preview-message');
     message.hidden = false;

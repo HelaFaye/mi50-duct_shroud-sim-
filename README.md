@@ -13,10 +13,10 @@ The main implemented capabilities are:
 - A header-only measured MI50 system-curve template in `data/system_curves/`.
 - Weighted photogrammetry scale fitting in `scripts/photogrammetry_scale_fit.py`.
 - MI50 envelope, public-source, physical-measurement, and photogrammetry documentation under `docs/` and at the repository root.
-- A static browser interface under `site/`.
+- A parametric shroud editor and in-browser operating-point/acoustic simulation under `site/`, with watertight STL and OpenSCAD export (see [`docs/SHROUD_EDITOR.md`](docs/SHROUD_EDITOR.md)).
 - Automated unit tests under `tests/` and GitHub Actions under `.github/workflows/`.
 
-The following deliverables are **not present in this checkout**: OpenSCAD source models, reference STL meshes, the earlier duct-sizing and acoustic-budget scripts, fan-catalog CSV, and a CFD-ready geometry/boundary-condition package. They must be restored from their authoritative source or developed in separate changes before the repository can be described as containing them.
+The following deliverables are **not present in this checkout**: the original OpenSCAD reference models and reference STL meshes, the earlier duct-sizing script, fan-catalog CSV, and a CFD-ready geometry/boundary-condition package. (The parametric editor generates new shroud STL/OpenSCAD files; it is not a restoration of the original models.) They must be restored from their authoritative source or developed in separate changes before the repository can be described as containing them.
 
 See [`docs/REPOSITORY_STATUS.md`](docs/REPOSITORY_STATUS.md) for the audited inventory and continuation boundaries. Fan-data provenance and extraction are recorded in [`docs/ARCTIC_P9_MAX_CURVE_PROVENANCE.md`](docs/ARCTIC_P9_MAX_CURVE_PROVENANCE.md).
 
@@ -32,6 +32,14 @@ The engineering roadmap, milestone acceptance criteria, branching policy, and cu
 
 Keep `main` as the validated integration baseline. Perform ongoing engineering work on focused `wip/<topic>` branches and merge through pull requests after local validation and CI pass. Update the progress log when a milestone changes state or an engineering decision changes.
 
+## Run the editor
+
+```bash
+python3 -m http.server 8000
+```
+
+Then open <http://localhost:8000/site/>. Every geometry change rebuilds a watertight mesh and an equivalent OpenSCAD model, and re-solves the operating point with a port of the Python solver. Cooler inlet dimensions and system resistance defaults are placeholders until you measure your card; see [`docs/SHROUD_EDITOR.md`](docs/SHROUD_EDITOR.md).
+
 ## Run the tests
 
 The project uses Python's standard library for its analysis and tests; no third-party Python packages are required by the checked-in test suite.
@@ -40,7 +48,7 @@ The project uses Python's standard library for its analysis and tests; no third-
 python3 -m unittest discover -s tests -v
 ```
 
-The combined suite currently contains 156 tests covering the deterministic solver, measured-curve solver, sensitivity and uncertainty engines, electrical model, fan datasets, and photogrammetry scale fitting. GitHub Actions runs it on Python 3.10, 3.12, and 3.14 for pushes and pull requests.
+The combined Python suite currently contains 163 tests covering the deterministic solver, measured-curve solver, sensitivity and uncertainty engines, electrical model, fan datasets, and photogrammetry scale fitting. The browser modules have their own Node test suite (`node --test site/tests/*.test.mjs`). GitHub Actions runs both on Python 3.10, 3.12, and 3.14 for pushes and pull requests.
 
 ## Fan/system operating-point solver
 
