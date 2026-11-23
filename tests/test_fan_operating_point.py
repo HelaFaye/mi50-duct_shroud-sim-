@@ -4,7 +4,12 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from analysis.fan_operating_point import FanCurve, SystemCurve, solve_operating_point
+from analysis.fan_operating_point import (
+    FanCurve,
+    SystemCurve,
+    classify_solver_failure,
+    solve_operating_point,
+)
 
 
 class FanCurveTests(unittest.TestCase):
@@ -179,6 +184,42 @@ class SystemCurveTests(unittest.TestCase):
                 self.fan, 1, system_pressure_mmh2o=2.0,
                 system_reference_flow_cfm=50.0, system_curve=self.system,
             )
+
+
+class SolverFailureClassificationTests(unittest.TestCase):
+    """Categories must track the solver's real error messages."""
+
+    FAN = FanCurve(((0.0, 10.0), (50.0, 5.0), (100.0, 0.0)))
+
+    def classify(self, **kwargs):
+        with self.assertRaises((ValueError, RuntimeError)) as raised:
+            solve_operating_point(curve=self.FAN, fan_count=1, **kwargs)
+        return classify_solver_failure(raised.exception)
+
+    def test_no_positive_flow_root_message(self):
+        # Not reachable with validated curves (system curves start at 0 mmH2O),
+        # so pin the category to the solver's literal message instead.
+        self.assertEqual(
+            classify_solver_failure(RuntimeError(
+                "No positive-flow operating point: system pressure meets/exceeds fan shutoff pressure")),
+            "no_positive_flow_root",
+        )
+
+    def test_short_system_curve(self):
+        short = SystemCurve(((0.0, 0.0), (10.0, 0.5)))
+        self.assertEqual(self.classify(system_curve=short), "system_curve_range_too_short")
+
+    def test_out_of_range_interpolation(self):
+        with self.assertRaises(ValueError) as raised:
+            self.FAN.pressure_at(150.0)
+        self.assertEqual(classify_solver_failure(raised.exception), "fan_curve_range_failure")
+        system = SystemCurve(((0.0, 0.0), (10.0, 1.0)))
+        with self.assertRaises(ValueError) as raised:
+            system.pressure_at(20.0)
+        self.assertEqual(classify_solver_failure(raised.exception), "system_curve_range_failure")
+
+    def test_unknown_error_is_generic(self):
+        self.assertEqual(classify_solver_failure(ValueError("something else")), "solver_failure")
 
 
 if __name__ == "__main__":

@@ -25,6 +25,7 @@ from analysis.fan_operating_point import (
     FanCurve,
     SystemCurve,
     _validate_points,
+    classify_solver_failure,
     solve_operating_point,
 )
 from analysis.operating_point_sensitivity import _reject_output_input_collision
@@ -701,19 +702,7 @@ def _joint_moments(vectors: list[tuple[float, ...]]) -> tuple[list[list[float]] 
     return covariance, correlation
 
 
-def _failure_reason(exc: Exception) -> str:
-    message = str(exc).lower()
-    if "no positive-flow operating point" in message or "zero flow" in message:
-        return "no_positive_flow_root"
-    if "no intersection within supplied system-curve range" in message:
-        return "system_curve_range_too_short"
-    if "could not bracket" in message:
-        return "unbracketed_operating_point"
-    if "outside the supplied fan curve" in message:
-        return "fan_curve_range_failure"
-    if "outside the supplied system curve" in message:
-        return "system_curve_range_failure"
-    return "solver_failure"
+_failure_reason = classify_solver_failure
 
 
 def run_uncertainty(

@@ -5,7 +5,7 @@
 - Repository: `HelaFaye/mi50-duct_shroud-sim-`
 - Stable branch: `main`
 - Initial audited commit: `227ced78fa3fe52926d0108a0a40638814dd8c70`
-- Current tested baseline commit: `eca4f4493e4df18843932a3e755299645ef1822f`
+- Current tested baseline: see the dated log in [`PROGRESS.md`](PROGRESS.md); this audit document records scope, not the latest commit.
 - Audited local checkout: `~/Downloads/mi50-duct_shroud-sim`
 - Source snapshot at initial audit: 28 tracked files; the CI workflow and this status document were subsequently added.
 - The project `.gitignore` contains `*.pyc`; no global `core.excludesfile` was configured during the audit.

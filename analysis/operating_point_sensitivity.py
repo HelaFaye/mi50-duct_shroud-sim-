@@ -22,6 +22,7 @@ from analysis.fan_operating_point import (
     FanCurve,
     SystemCurve,
     _validate_points,
+    classify_solver_failure,
     solve_operating_point,
 )
 
@@ -150,19 +151,7 @@ def _resistance_scaled_system_curve(
     )
 
 
-def _failure_category(exc: Exception) -> str:
-    message = str(exc).lower()
-    if "no positive-flow operating point" in message or "zero flow" in message:
-        return "no_positive_flow_root"
-    if "no intersection within supplied system-curve range" in message:
-        return "system_curve_range_too_short"
-    if "could not bracket" in message:
-        return "unbracketed_operating_point"
-    if "outside the supplied fan curve" in message:
-        return "fan_curve_range_failure"
-    if "outside the supplied system curve" in message:
-        return "system_curve_range_failure"
-    return "solver_failure"
+_failure_category = classify_solver_failure
 
 
 def _relative_comparison(value: float, baseline: float) -> dict[str, float | None]:
