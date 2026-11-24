@@ -265,6 +265,186 @@ export const FANS = [
   },
   {
     "electrical": null,
+    "frame_mm": 80,
+    "id": "arctic_p8_max_mfr",
+    "label": "ARCTIC P8 Max @ 3000 RPM (manufacturer CFD table)",
+    "points": [
+      [
+        0.0,
+        5.71
+      ],
+      [
+        2.28,
+        5.43
+      ],
+      [
+        4.88,
+        4.96
+      ],
+      [
+        6.51,
+        4.73
+      ],
+      [
+        17.24,
+        3.41
+      ],
+      [
+        18.86,
+        3.33
+      ],
+      [
+        21.79,
+        3.28
+      ],
+      [
+        25.68,
+        3.2
+      ],
+      [
+        28.93,
+        2.95
+      ],
+      [
+        32.49,
+        2.43
+      ],
+      [
+        37.68,
+        1.89
+      ],
+      [
+        41.57,
+        1.19
+      ],
+      [
+        46.11,
+        0.18
+      ],
+      [
+        50.31,
+        0.0
+      ]
+    ],
+    "provenance": "Manufacturer CFD workbook; one exact duplicate row removed. See docs/ARCTIC_CFD_WORKBOOK_PROVENANCE.md.",
+    "rpm": 3000,
+    "sha256": "c109e7fd9bb1ae52b64bad825d11c2a1aad90caa2f3d48d3048018be10daafa6",
+    "source": "data/fan_curves/arctic_p8_max_3000rpm_manufacturer_cfd.csv"
+  },
+  {
+    "electrical": null,
+    "frame_mm": 120,
+    "id": "arctic_p12_max_mfr",
+    "label": "ARCTIC P12 Max @ 3300 RPM (manufacturer CFD table)",
+    "points": [
+      [
+        0.0,
+        5.31
+      ],
+      [
+        11.85,
+        4.61
+      ],
+      [
+        23.03,
+        4.03
+      ],
+      [
+        35.61,
+        3.39
+      ],
+      [
+        46.17,
+        3.1
+      ],
+      [
+        58.78,
+        2.36
+      ],
+      [
+        71.25,
+        1.46
+      ],
+      [
+        83.84,
+        0.0
+      ]
+    ],
+    "provenance": "Manufacturer CFD workbook; terminal 0.02 mmH2O set to 0. Differs from ARCTIC's own P12 Max chart. See docs/ARCTIC_CFD_WORKBOOK_PROVENANCE.md.",
+    "rpm": 3300,
+    "sha256": "851a11d151994d1b75510916fadee215a356b9db3715acddabcd56c1a7e86326",
+    "source": "data/fan_curves/arctic_p12_max_3300rpm_manufacturer_cfd.csv"
+  },
+  {
+    "electrical": null,
+    "frame_mm": 140,
+    "id": "arctic_p14_max_mfr",
+    "label": "ARCTIC P14 Max @ 2800 RPM (manufacturer CFD table)",
+    "points": [
+      [
+        0.0,
+        4.486751337102884
+      ],
+      [
+        20.720871688061646,
+        3.6388093365698815
+      ],
+      [
+        24.752688262031256,
+        3.4868109375264136
+      ],
+      [
+        36.46817311417652,
+        3.07959784053992
+      ],
+      [
+        45.425383268689764,
+        2.7732743028593676
+      ],
+      [
+        57.29035690530034,
+        2.389147729590062
+      ],
+      [
+        63.41219754429074,
+        2.1519090873416333
+      ],
+      [
+        70.43001329704522,
+        1.8119818035238406
+      ],
+      [
+        78.10463291639243,
+        1.4506090004814371
+      ],
+      [
+        83.7442038828076,
+        1.128259528886588
+      ],
+      [
+        90.61880371885235,
+        0.7274097069701395
+      ],
+      [
+        93.71620092124853,
+        0.5712387943793333
+      ],
+      [
+        96.12242936147894,
+        0.48086528622793173
+      ],
+      [
+        109.8478463517346,
+        0.0
+      ]
+    ],
+    "provenance": "Manufacturer CFD workbook, unmodified. See docs/ARCTIC_CFD_WORKBOOK_PROVENANCE.md.",
+    "rpm": 2800,
+    "sha256": "cd1356d3bb0b8b5126745de45acb3eeb55356fb290e0ad363f30daec7a48bde4",
+    "source": "data/fan_curves/arctic_p14_max_2800rpm_manufacturer_cfd.csv"
+  },
+  {
+    "electrical": null,
     "frame_mm": 140,
     "id": "noctua_nf_a14_1500",
     "label": "Noctua NF-A14 PWM @ 1500 RPM (manufacturer)",
